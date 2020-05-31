@@ -159,6 +159,9 @@
     <Compile Include="Common\Uart.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Config\config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="dds-hw.c">
       <SubType>compile</SubType>
     </Compile>
@@ -201,6 +204,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Common" />
+    <Folder Include="Config" />
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>
