@@ -1,0 +1,63 @@
+KNOWN BUGS
+==========
+- TRMSC display shows -9999.0 instead of overload when range=1 V, level>1.021 V (already fixed by Thoralt)
+- autorange hangs sometimes (already fixed by Thoralt)
+- during sweep with jlab you get negative spikes (psc: fixed, was peak voltage channel instead of rms channel)
+
+MUST
+====
+- do all update checking in jobExecute(), do not update LCD or check for limits 
+  in jobPanel() -> check if ParamsUpdateAndDisplay() uses _all_ menu items
+- waveform "external" relay is ticking when burst is on (not audible any more: fixed?)
+- check if all LastParams are updated to Params in jobExecute()
+- check if all members of Params and LastParams are initialialized in main()
+- check if all members of LastParams are updated within one loop of jobExecute()
+- optimize Autorange switching points
+
+future releases:
+- add menu entry for peak level setting (psc: done)
+- cm compliant check sum for optobus parser commands (psc: fixed, XOR checksum and strict command verification added)
+- PWM (using PWM OC1B bridged to external input)
+- asymmetric rectangle waves (using PWM OC1B bridged to external input)
+- AM Function
+- FM Function
+- OM Function (offset modulation)
+- PM Function (phase modulation)
+
+SHOULD
+======
+- use TRMSC as modulation source for AM, FM, but think about it. Signal is modified
+  by trmsc
+- when displaying TRMSC dB, '~' is missing (psc: fixed with a little less resolution e.g. +1.23dB/+12.3dB )
+- navigation with encoder only (clickwheel style)
+- predefined values for logic mode: ECL, TTL, CMOS, ...
+- support for SQC modification
+- settings: reset all to default
+
+NICE TO HAVE
+============
+- menu item pointers are currently casted to (void*), this should be fixed
+  to an appropriate type for better style
+- localization
+- Sweep marker (psc: added log mode, added sync and sweep markers)
+
+NEEDS DISCUSSION
+================
+- 2 Ticks of encoder needed to change parameter when in TRMS permanent display
+- trms interval for collecting measurements needs to be discussed. Sweep in Jlab 
+  looks not as smooth as it did with cms firmware (same as negative spikes in "known bugs", fixed)
+- in TRMSC display mode: change range with encoder
+
+
+TODO Karsten (dg1vs)
+====================
+- Macros für "Char" in sprintf oder ähnlichen Funktionen
+- symbolische Werte für Sonderzeichen
+- "Zeilennummer durch eine #define-Konstante ersetzt, was als Nebeneffekt der Lesbarkeit gut tut. Das könnte man in Deinem NEUEN Code (ganz unten panel.c) auch noch machen, dann isses konsistent."
+	* Unterscheidung zwischen echten und virtuellen zeilennummern
+- Softkey für encoder
+- Vereinachung des Konstruktes LCDOverwrite_P(5, DISPLAY_LINE_1, 3, PSTR("Off"));
+	Speziell bei der großen Variante steckt hier Fehlerpotential
+- Entfernung des "Enter" beim Sweep
+	"Das ist bestimmt noch ein Überbleibsel aus vergangenen Tagen, als das Sweep-Menü mehrere Evolutionsstufen durchlief. Das "Enter" kann da weg."
+

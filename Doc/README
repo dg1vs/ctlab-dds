@@ -1,0 +1,40 @@
+DDS C Firmware Port
+
+Features
+--------
+
+(* denotes features not included in original firmware)
+
+- wide range input for all parameters with encoder using acceleration*
+  (no range switching necessary)
+- scrolling* for long parameter names to avoid unreadable abbreviations
+- frequency selection from 0.015625 Hz (1/64 Hz) to 300 kHz*
+- output level adjustment (RMS, 0.025 mV - 8.191 V, resolution 0.025 mV 
+  [up to 200 mV], 1 mV [above 200 mV]), selectable in Volt or dB
+- offset adjustment (-10.0 V - +10.0 V, resolution 5 mV)
+- waveform selection:
+	- off
+	- sine
+	- triangle
+	- square
+	- logic (high and low level adjustable separately*)
+	- external
+- burst mode (on and off time adjustable separately*)
+- sweep* with 5 ms time resolution:
+	- modes: sweep up, down, up+down
+	- start frequency and end frequency
+	- sweep time (100 ms - 30 s, resolution 1 ms)
+- TRMSC support:
+	- range selection including autorange* feature
+	- RMS and Peak voltage display, selectable in Volt or dB
+	- permanent* measurement display (selectable RMS or Peak voltage
+	  displaying after one second encoder/button inactivity independent
+	  of currently selected parameter)
+
+Planned Features
+----------------
+
+- AM
+- FM
+- OM (offset modulation)
+- PM (phase modulation)

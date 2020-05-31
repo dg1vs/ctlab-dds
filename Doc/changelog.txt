@@ -1,0 +1,417 @@
+2008-02-09 Thoralt Franz
+
+* added option to switch between linear, octave or decade sweep (incomplete)
+* fixed bug: when TRMSC range = 1 V and voltage > 1.021 V, -9999.0 was 
+  displayed instead of OVERLOAD
+* fixed bug: auto range seemed to hang after switching to manual range and
+  back to auto range
+
+
+2008-08-03 Paul Schmid
+
+dds-parser.c
+* Fixed bug: channel assignment for TRMSC for peak and True-RMS measurement 
+  (negative spikes in JLab sweep should be gone now. However, the peak measurement is very unstable --> todo)
+* Parser: added additional commands for Sweep mode and Test command
+
+dds-hw.c
+* added SyncOut function for Sweep mode. Now SyncOut connector PL5 on TRMSC board will send sync signals when sweep is on.
+
+timer.c
+* added log sweep mode with optional marker mode (still only one "double" multiplication in ISR)
+  Note: Markers are only available currently for log and up slope.
+
+panel.c
+* extended CalculateSweepIncrement to calculate global values for sweep: additional log and marker position calculation
+* sweep philosophy changed:
+	Menu: 		absolute mode (Start/End) (Markers at absolute positions 10^xHz or 440Hz*2^x respectively) 
+			relative mode (Center/Span) (Markers at positions relative to Center frequency)
+	Mode: 		log/lin
+	Slope: 		up/down/up+down
+	Marker: 	off/decade/octave
+	MarkerHeight: 	0.5 .. 2.0
+* changed sweep panel menu to match new philosophy, added encoder and display functions.
+  Note: Start/End and Center/Span are currently available all in both Menu modes
+
+main.c 
+* added sweep absolute/relative mode cross-calculation to CheckLimits
+* change boot message to match command response format "#1:..."
+* moved voltage setting to a separate function RestoreAmplitude (to save memory and reduce redundancy)
+* moved ParamsUpdateAndDisplay to a new function UpdateDisplay, which uses the data already present in Menu structures "menu_entry_t" (to save memory and reduce redundancy)
+  Note: some more redundancy present in the sections where UpdateDisplay is called
+* for sweep mode: added automatic marker insertion during runtime and restore amplitude to normal, when sweep is switched off
+
+parser.c
+* added verification of optional XOR command checksum (concept taken from HB's DCG2)
+* enhanced command parser (64 byte) overflow checking, added OVFL error
+  note: this is NOT the UART loop buffer (128bytes) in uart.c. overflows in uart.c are still unhandled (!)
+* added elimination of CRLF (from DCG-C) to reduce the response data flow to subsequent modules (and prevent overflow there)
+* added strict syntax checking (strongly recommended): format "1:.." mandatory to check if the data in the command buffer is really a command by syntax
+
+2008-08-09 Paul Schmid
+
+encoder.c: 
+* fixed: Encoder function changed to handle state machine completely in encoder.c, including Param.IncRast
+  to avoid non-ideal situation at the end-of-scale when encoder direction is changed, but no pulse issued.
+  This can happen, if the encoder is turned too fast for the software follow and EncPos center value is not 0 but e.g. -2
+
+timer.c + panel.c
+* Sweep markers are now available for all log sweep modes: up, down, up+down
+* note: sweep markers are still not available for linear sweep modes, sorry.
+
+General Note: old AVR-GCC version necessary now: WinAVR-20070525. This version delivers smaller code, but currently still 98.8% full. :-((
+
+
+2008-08-15 Paul Schmid
+
+* adjusted sweep markers for down mode by one sweep step, to be more precise. 
+* no markers in Logic mode // voltage in LogicMode corrected (was Square-Level)
+* fixed: Power-on voltage dLevel was 0
+
+
+2008-08-19 Paul Schmid
+
+encoder.c: 
+* enhanced: Code for encoder redesigned completely again, saving 300 bytes. 
+	Same algorithm as before, but now with statemachine and lookup table.
+
+
+2008-08-23 Jörg Wilke
+
+* fixing of minor bugs and code size optimization
+* SETLed replaced by macro
+* Optimized CheckLimits Macros
+* Removed redundant spaces by new LCD-Functions
+* Reengineered UpdateDisplay-Mechanism and fixed prior bug
+* #ifdef'ed the Flashing routine
+* Removed redundant function calls in panel.c
+* Startup Menu is Frequency again
+
+
+2008-08-23 Paul Schmid
+
+panel.c: 
+* changed Sweep menu philosophy: MainMenu: Sweep On/Off, SubMenu: MarkerMode absolute/relative
+* changed int16 and uint8 encoder functions to only two functions.
+* some small cleanup regarding sweep support functions.
+
+
+2008-08-24 Paul Schmid
+
+lcd.c: 
+* LCDOverwrite_P: clearing leading and trailing whitespaces instead of calling LCDClearLine(y) to save traffic on I2C-Bus
+
+
+2008-08-29 Paul Schmid
+
+main.c, timer.c, panel.c
+To eliminate jitter and loss of markers etc. significantly improved the sweep function:
+* moved the handling of sweep frequency switching, sync pulse generation and marker handling to timer ISR
+* most of the parameters used in sweep ISR code are pre-calculated in calculateSweepIncrement()
+* no more code for sweep handling in JobExecute in main.c
+* measured time consumption of portion of timer ISR, max. ca. 130us
+* moved CalculateSweepIncrement() to main.c
+* unfortunately used again 1.8% memory for this improvement, mostly for pre-calculation.
+Sweep is now capable of handling 2ms steps - SWEEP_UPDATE_INTERVAL (as opposed to 5ms before). 1ms might be possible as well.
+
+panel.c
+* removed time-consuming and unnecessary LCDclear in panel code for scrolling menu line 1
+
+main.c
+* small fixes for DDRC and RestoreAmplitude()
+
+
+2008-09-10 Paul Schmid
+
+panel.c
+* fixed: when displaying TRMSC dB, '~' is missing
+  now displaying with a litte less resolution for larger values e.g. +1.23dB/+12.3dB
+  otherwise we would need to invent a special character for "dB" in the display controller to save one character.
+
+main.c, dds-hw.c, panel.c
+* fixed: calculation of levels was in total always the same for all waveforms --> wrong output voltage on Triangle/Square
+  moved all waveform-dependent calculation from RestoreAmplitude to SetValue.
+  now my scope and meter show correct peak/crest-factor values for Tri/Square mode ;-))
+* introduced PeakLevel Menu
+* added automatic PeakLevel calculation depending on waveform.
+* cleaned up CrossCalcSweep functions
+
+2008-09-15 Paul Schmid
+
+panel.c, main.c
+* fixed: Manual setting of Burst via encoder vs. setting via UART
+
+panel.c
+* changed: acceleration factors for encoder, now I like it better ;-)) hope the other users like it, too
+
+
+2008-09-19 Paul Schmid
+
+Many thanks to Patrick Sch. for his bugreport. First package of fixes/changes:
+panel.c, main.c, timer.c
+* fixed: Display did not update, when being switched from mV-Level to db and vice versa by pushing encoder
+* fixed: PeakMenu now using only peak values instead of peak-peak values to be compliant to Pascal-Firmware (obsolete)
+* fixed: Linear sweep was completely broken since change to sweep handling in ISR
+* changed: Sweep Time is now in increments of 100ms (Sweep-Update-Interval is still at 2ms)
+* changed: TRMSC menu now shows RMS and peak level first, then Range and Permanent display selection.
+
+
+2008-09-21 Paul Schmid
+
+* fixed back ;-)): peak values again using peak-peak calculation. Set menu texts to show "peak-peak" now.
+* fixed: don't display dB values in peakpeak TRMSC value displays (shows nonsense values)
+* fixed: when switching waveforms, peakpeak level is preserved and RMS value is set (compatible to Pascal-Firmware)
+* fixed: TRMSC RMS display showing correct parameters now when toggling RMS/dB value
+* fixed: set crest factors to better precision
+* fixed: frequency and level encoder function now align the precision to the range in order to align display and used value.
+* added: pressing encoder in Offset mode now toggles between zero and last non-zero value
+* added: SweepMenu: CenterSpan calculation is now related to linear/log mode 
+* memory: used up almost all memory, but freed some bytes (sweepmode and logic level calculation)
+
+
+2008-10-04 Paul Schmid
+
+main.c:
+* fixed: sweep level, when markers are active and peakpeaklevel (rather than level) is modified
+* fixed: peakpeaklevel calculation caused crash(!) if encoder turned too fast ccw, now activated LIMIT 
+* memory: changed all LIMIT*() from Macros to functions, saving 888 (!) bytes 
+
+main.c, panel.c, dds-hw.c:
+* memory: memory saved by removing some double/float calculations, approx. 124 bytes
+
+main.c, panel.c, panel.h:
+* added: Terz frequency mode for encoder, activated by pressing encoder. Same frequency list as Pascal firmware
+* changed: Sweep time now in Seconds instead ms
+* changed: encoder fine tuning now allows to follow all steps 999.8 <--> 999.9 <--> 1000.0
+	was before: 999.8 --> 999.9 --> 1000.0 but 1000.0 --> 999.0
+
+
+2009-01-06 Paul Schmid
+
+main.c, panel.c:
+* fixed: Terz values now correct.(especially 31.5Hz ;-) changed the coding of values from uint16 to 12-bit mantissa and 4bit exponent
+         memory used apprx. 50 bytes, but including new frequencies down to 10 Hz
+         frequencies down to 1Hz and over 100kHz are possible with this representation without spending too much memory.
+	 Thanks to Ansgar for the feedback.
+* fixed: RC0 as curent version level on panel and optobus
+
+
+2009-02 ... 2009-03 Thoralt Franz and Jörg Wilke
+
+- moved g_uiTerzArray into flash (PROGMEM, pgm_read_word())
+- removed all references to PARAM_L_1E6, SCALE_A, SCALE_mA, SCALE_uA (used #ifdef COMPILE_WITH_UNNECESSARY_STUFF, saved 898 bytes)
+- substituted dOffset by int16_t iOffset, dLogicHi by int16_t iLogicHi, dLogicLo by iLogicLo: saved 870 bytes
+- pressing the encoder button while in logic hi or logic lo menu sets level to 0V/5V
+- added integer fixpoint support to panel.c/PrintLCD()
+- replaced "Params." with "pParams->" to save memory
+- Note: replacement of "LastParams" had no positive effect
+
+TODO: dds-parser.c/230: neue Verwendung von iOffset im Quelltext anpassen!
+TODO: dds-parser.c/237: neue Verwendung von iLogicLo im Quelltext anpassen!
+TODO: dds-parser.c/240: neue Verwendung von iLogicHi im Quelltext anpassen!
+
+TODO: Default-Werte durch Drücken auf Encoder: PWM duty cycle = 50%, PWMHi = 5 V, PWMLo = 0 V, Freq = 1 kHz, Level = 0.7 (?) V
+
+
+2009-10-13 Paul Schmid
+
+main.c
+- fixed: sequence of assignment for iBurst0 and iBurst1 variables to ISR variables
+timer.c
+- added: sync signal now available for Burst mode, too ;-)
+panel.c
+- fixed: Menu selection via panel will no longer "overflow" when turning encoder CCW past the leftmost entry. (Rightmost entry/CW was ok)
+- fixed: PWM display string.
+
+
+2009-10-13 Paul Schmid
+dds-parser.c
+*fixed: TODO iOffset/iLogicLo/iLogicHi adaption to int16 now completed. Will now again accept labbus values with "V" scale (some float conversion was required again ;-) )
+ current program size: 29574 bytes (90.3% Full)
+
+2010-02-18 Paul Schmid
+parser.c, dds-parser.c
+changed: SRAM memory saving measures for Mnemonics and ErrStr (backported from DCG2/EDL2)
+	 saved 360(!) bytes of RAM and 92 bytes of ROM
+changed: if a command for another module or an answer is detected, no longer "break" the loop but "continue" in order to process more commands in one timer event.
+	 (backport of Idea from DCG2/EDL2)
+
+
+2010-02-20 Paul Schmid
+encoder.c: moved ucEncoderTableX to ROM as in DCG2-C, again, same way as Thoralt did before. No side effects encountered this time, which were:
+           the value was decreased, when the encoder was turned very fast clockwise. To be verified ;-) 
+
+2010-07-04 Paul Schmid
+fixed: initalisation of serial baudrate to setting of (bus) parameter 252
+
+
+2010-09-16 Karsten Schmidt
+introduced new compiler option for 4*20 display. 
+
+
+2010-09-16 Paul Schmid
+fixed: removed obsolete "enter"-arrows in Sweep submenu (5*)
+
+
+bug?
+int/lint/byte rounding of negative "integers" (+ .5)
+
+2010-09-24 Thoralt Franz
+* fixed: frequencies above 100.0 kHz now are changed with 100 Hz resolution, was 10 Hz before which resulted in display value only changing every 10 encoder ticks
+* changed: replaced __attribute__((noreturn)) by __attribute__((OS_main)) to avoid
+  warning "function declared 'noreturn' has a 'return' statement" with avr-gcc 4.3.3
+* added definition for PWM Duty to Waveform menu including management functions
+* added functions for converting timer values into frequencies and back
+* added PWM hardware initialization
+* replaced OffsetEncoderFunction, LogicHi/LogicLoEncoderFunction and PWMDutyEncoderFunction with IEncoderFunction (-58 bytes)
+
+2010-10-03 Karsten Schmidt
+added more hardware in timer.c and uart.c (1284 with 20 Mhz)
+
+2010-10-05 Karsten Schmidt
+* modified lcd.* 
+	* symbolic names for special display charcters
+	* some comments
+* modified main.c
+	* cosmetic for start screen
+* modified panel.*
+	* introduced static functions to save some bytes
+	* "calculating" macros
+	* renamed some functions, the idea behind this is to seperate information and layout
+	 -> so it is easier to adapt different displays, only display 082 ist working with this release
+
+2010-10-10 Karsten Schmidt
+* modified mostly panel.c
+	* Separation of content and presentation
+* some cosmetic-stuff
+
+2010-10-11 Thoralt Franz
+* added frequency to PWM submenu
+* added PWM Hi/Lo to menu and Params, integrated PWM Hi/Lo into init and range checks
+
+2010-10-13 Thoralt Franz
+* removed PMW-Hi/Lo routines, this is now handled via the Logic Hi/Lo routines
+
+2010-10-13 Karsten Schmidt
+* new command dcy (DutyCYlce) for pwm added
+
+2010-11-09 Thoralt Franz
+* changed PWM duty resolution from 1 % to 0.1 %
+* added quantization to PWM duty
+
+2010-11-14 Thoralt Franz
+* fixed bug: main.c:436, switched WAVE_SQUARE and WAVE_LOGIC
+* fixed PWM duty resolution, now works as expected
+* experimental: PWM output now on OC1A and OC1B (OC1A is normally ID jumper JP1!)
+* rewrote user manual (not yet finished)
+
+2010-11-17 Paul Schmid
+* added: Markers for Linear Sweep (in addition to already existing Markers for Log Sweep)
+* additional code size 582 Bytes.
+
+2010-11-19 Paul Schmid
+* fixed: bug with Terz Frequency entry by menu. fixed for start, stop & center frequency for sweep mode.
+       fix does not use additional memory
+       Some fine tuning necessary for PWM quantisation mode ...
+* removed: AM and FM menu orphans.
+
+2011-04-18 Paul Schmid
+* changed: g_cVersStrShort_P now same setup as in DIV-C
+
+
+2012-04-29 Paul Schmid
+* included offset output for WAVE_PWM
+* HW interface: 
+	- AD9833 has an output range of 38mV to 650mV. This is not symmetric and please note the offset
+	- DC restorer of U9/U8 is used to shift the signal to (650mV-38mV)/2+38mV.
+	- Input PWM voltage from controller is 5V-TTL
+	- circuit around U12a has amplification range of V=1...6, adjustable with R13
+	- output of U12a stage for PWM must have 0..650mV, so voltage divider is required.
+	- C28 decouples the DC part of the PWM signal, but this is variable with the Duty Cycle. However, C28 has negative impact on the PWM waveform below 50Hz anyway.
+	  C28 works only satisfactorily with DC-free signal, independent of capacity. So it is ok with the original audio input.
+
+* proposed change of hardware for adaption of PWM instead of Audio-in option:
+	- new connection from controller PWM out to PIN3/U12a via new resistor 47k (or 470k)
+	- replace R19 with 4k7 (if new resistor above is 470k keep original R19 47k)
+	- replace R13 with 10k or 4k7 (recommended)
+	- replace C28 with bridge
+
+	- PWM offset option 1a: additional 180k + adj_100k from Pin2/U12a to -15V (Pin4/U12a)
+	- PWM offset option 1b: additional -15V (Pin4/U12a) - 47k + adj_100k (to Pin2/U12a) - 47k - +15V (Pin8/U12a)
+	- PWM offset option 2:  BS170 + 10k + adj_47k in parallel to R18; Gate connected to signal D12 (Pin14/U3)
+	- PWM offset option 3:  use software parameter to use output offset circuit (TBD)
+
+
+	- PWM amplitude: adjust R13 to get correct amplitude in PWM mode
+	- PWM offset: 	either adjust adjustable resistor for correct offset
+	- repeat both of the above for the offset option 1a/b as both settings influence each other.
+
+* fixed:   bug: if in PWM mode, frequency rolling over 30Hz with encoder would jump unpredictably. changed transition frequency to 32Hz.
+
+2012-05-06 Paul Schmid
+        - beautified code, no functional changes
+
+2012-05-15 Paul Schmid
+        - "const PROGMEM" for new compilers, no functional changes
+
+2012-11-04 Paul Schmid
+* fixed rollover at 0.1% of PWM duty cycle
+
+2013-04-07 Paul Schmid
+* fixed: nervous toggling of TRMSC ranges in auto-range mode; delay of 4 measurements 
+* renamed: version 1.0RC0c to 1.0d
+* added: firmware version string now shows if it was compiled for PWM support ("DDSp" rather than "DDS")
+* cleanup: optional PWM offset code removed; hardware modification is required anyway.
+
+
+2013-07-12 Paul Schmid
+* fixed: minor code cleanup in lcd/panel
+
+
+2013-09-24 Paul Schmid
+* added: PWM Pulse counting mode (thanks to Walter for the idea) = > OPT 71 / DCC (0 = continuous, max 30000)
+* added: PWM Pulse inversion option => OPT 72 / DCP (0 = non-inv, 1 = inv)
+         Note for the non-contiuous mode: on the inversion of the polarity one pulse is triggered to clear the PWM Waveform Generator logic
+* added: PWM command definition in "SyntaxDDS-C.xls" for DCC/DCP
+* fixed: PWM command definition in "SyntaxDDS-C.xls" for DCY (1..999 rather than 1..99)
+
+Currently used compiler flags for avr-gcc 4.7.2, 5.4.0:
+-mcall-prologues
+-funsigned-char
+-funsigned-bitfields
+-ffunction-sections
+-fdata-sections
+-fpack-struct
+-fshort-enums
+-fno-inline-small-functions
+-fno-split-wide-types
+-fno-tree-scev-cprop
+-ffreestanding
+
+-Wall
+-Wextra 
+-Wstrict-prototypes
+-std=gnu99 -Os -c -gdwarf-2
+-mmcu=atmega32
+-DF_CPU=16000000UL -DUART_2X -DUART_BAUDRATE=38400
+
+    Program Memory Usage:   30838 bytes   94,1 % Full
+    Data Memory Usage:      829 bytes   40,5 % Full
+
+2013-09-26 Paul Schmid
+* fixed: minor fixes related to PWM
+* fixed: replaced all "float" variables with "double"
+
+2019-11-20 Paul Schmid
+*compiled with avr-gcc 5.4.0: No code change.
+	Program Memory Usage 	:	30410 bytes   92,8 % Full
+	Data Memory Usage 		:	821 bytes   40,1 % Full
+
+2019-11-30 Paul Schmid
+*disabled PWM Pulses when changing number manually via encoder. Can be re-enabled via #define PWM_SHOW_PULSES
+
+
+TODO: Autodetect PWM auf OC1A/OC1B
+TODO: Sollte PWM-Frequenz eine eigene Menu-ID bekommen?
+TODO: PWM frequency quantization handling in Terz Mode? Fine Tuning necessary ;-))
+TODO: Sweep bei PWM nicht in Frequenz, sonden in Pulsweite
