@@ -98,15 +98,11 @@ uint8_t ActivityTimer;
 uint8_t g_ucLCDpresent;
 
 #ifdef COMPILE_WITH_PWM // hardware modification required
-
     const char g_cVersStrLong[] = VERSSTRLONG_PWM ;
     const PROGMEM char g_cVersStrShort_P[] = VERSSTRSHORT_PWM ;
-
 #else                   // standard hardware
-
     const char g_cVersStrLong[] = VERSSTRLONG_STD ;
     const PROGMEM char g_cVersStrShort_P[] = VERSSTRSHORT_STD ;
-
 #endif
 
 
