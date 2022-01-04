@@ -73,13 +73,14 @@
 #include "main.h"
 #include "dds-hw.h"
 
-#include "panel.h"
+#include "I2CRegister.h"
+#include "Lcd.h"
+#include "Encoder.h"
 #include "Uart.h"
+
+#include "panel.h"
 #include "parser.h"
 #include "timer.h"
-#include "I2CRegister.h"
-#include "lcd.h"
-#include "encoder.h"
 #include "dds.h"
 #include "dds-hw.h"
 
@@ -182,15 +183,15 @@ const PROGMEM uint16_t g_uiTerzArray[] =
 
 
 // variables to hold the TRMSC measurement values
-double g_dTRMSC_RMS;
-double g_dTRMSC_Peak;
-double g_dLastTRMSC_RMS;
-double g_dLastTRMSC_Peak;
+float g_dTRMSC_RMS;
+float g_dTRMSC_Peak;
+float g_dLastTRMSC_RMS;
+float g_dLastTRMSC_Peak;
 
 // buffer for averaging the input values
 #define TRMSC_BUFFER_SIZE 4
-double g_dTRMSC_RMS_Buffer[TRMSC_BUFFER_SIZE];
-double g_dTRMSC_Peak_Buffer[TRMSC_BUFFER_SIZE];
+float g_dTRMSC_RMS_Buffer[TRMSC_BUFFER_SIZE];
+float g_dTRMSC_Peak_Buffer[TRMSC_BUFFER_SIZE];
 
 // TRMSC auto range setting
 uint8_t g_ucTRMSC_Range = 0, g_ucLastTRMSC_Range = -1;
@@ -287,7 +288,7 @@ void jobActivityTimer(void)
 // -> --
 // <- --
 //----------------------------------------------------------------------------
-//double Round5(double d)
+//float Round5(float d)
 //{
 //  int16_t i;
 //
@@ -315,7 +316,7 @@ void CrossCalcSweep(uint8_t mode)
     {
         if (pParams->ucSweepMode == SWEEP_LOG)
         {
-            pParams->dSweepSpanFactor = pow( (pParams->dSweepEnd / pParams->dSweepStart), 0.5f);
+            pParams->dSweepSpanFactor = powf( (pParams->dSweepEnd / pParams->dSweepStart), 0.5f);
             pParams->dSweepCenter = pParams->dSweepStart * pParams->dSweepSpanFactor;
         }
         else
@@ -342,7 +343,7 @@ void CrossCalcSweep(uint8_t mode)
 
 void CrossCalcLevel(uint8_t mode)
 {
-    double dFactor;
+    float dFactor;
 
     switch (pParams->ucWaveForm)    // 2* CrestFactor
     {
@@ -386,13 +387,13 @@ void CrossCalcLevel(uint8_t mode)
 //----------------------------------------------------------------------------
 void CalculateSweepParameters(void)
 {
-    double d_Exponent;
+    float d_Exponent;
 
 #define DECADEOCTAVEFACTOR 3.32192809489f
-    double dOne = 1.0f;
-    double dCountMarker = 0.0f;
-    double dFirstMarker;
-    double dLastMarker;
+    float dOne = 1.0f;
+    float dCountMarker = 0.0f;
+    float dFirstMarker;
+    float dLastMarker;
 
 
 //  Start and End frequencies
@@ -401,51 +402,51 @@ void CalculateSweepParameters(void)
 
 
 //  for Linear Sweep
-    xg_uiSweepFrequencyIncrement = (unsigned long) ((pParams->dSweepEnd - pParams->dSweepStart) / ( (double)pParams->iSweepTime - (double)SWEEP_UPDATE_INTERVAL ) * 64.0f);
+    xg_uiSweepFrequencyIncrement = (unsigned long) ((pParams->dSweepEnd - pParams->dSweepStart) / ( (float)pParams->iSweepTime - (float)SWEEP_UPDATE_INTERVAL ) * 64.0f);
 
 
 //  for Log Sweep
-    d_Exponent = (double)SWEEP_UPDATE_INTERVAL / ( (double)pParams->iSweepTime - (double)SWEEP_UPDATE_INTERVAL );
+    d_Exponent = (float)SWEEP_UPDATE_INTERVAL / ( (float)pParams->iSweepTime - (float)SWEEP_UPDATE_INTERVAL );
 
-    g_dSweepFrequencyFactorUp =     pow( (double)pParams->dSweepEnd / (double)pParams->dSweepStart, d_Exponent );
-    g_dSweepFrequencyFactorDown =   pow( (double)pParams->dSweepStart / (double)pParams->dSweepEnd, d_Exponent );
+    g_dSweepFrequencyFactorUp =     powf( (float)pParams->dSweepEnd / (float)pParams->dSweepStart, d_Exponent );
+    g_dSweepFrequencyFactorDown =   powf( (float)pParams->dSweepStart / (float)pParams->dSweepEnd, d_Exponent );
 
 
     //  for Markers on Lin+Log Sweep
 
     if (pParams->ucSweepMarker != MARKER_OFF)
     {
-        double dFactor1 = ( (pParams->ucSweepMarker==MARKER_OCTAVE) ? (double)DECADEOCTAVEFACTOR : (double)1.0f );
+        float dFactor1 = ( (pParams->ucSweepMarker==MARKER_OCTAVE) ? (float)DECADEOCTAVEFACTOR : (float)1.0f );
 
-        dCountMarker = log10((double)pParams->dSweepEnd / (double)pParams->dSweepStart) * dFactor1;
-        g_dDistanceMarker = ( (double)pParams->iSweepTime - (double)SWEEP_UPDATE_INTERVAL ) / dCountMarker;
+        dCountMarker = log10((float)pParams->dSweepEnd / (float)pParams->dSweepStart) * dFactor1;
+        g_dDistanceMarker = ( (float)pParams->iSweepTime - (float)SWEEP_UPDATE_INTERVAL ) / dCountMarker;
 
         // absolute Marker Mode - Markers are set to  10^x Hz for Decade and 2^x * 440Hz for Octave
         // relative Marker Mode - Markers are set to  2^x or 10^x *fCenter for Log and 2^x or 10^x *fStart for Linear
 
-        double dFactor2 = ((pParams->ucSweepMarkerMode == MARKER_ABSOLUTE) ?
-                           ( (pParams->ucSweepMarker==MARKER_OCTAVE) ? (double)6.875f : (double)1.0f ) :
-                               ( (pParams->ucSweepMode==SWEEP_LINEAR)    ? (double)pParams->dSweepStart : (double)pParams->dSweepCenter ));
+        float dFactor2 = ((pParams->ucSweepMarkerMode == MARKER_ABSOLUTE) ?
+                           ( (pParams->ucSweepMarker==MARKER_OCTAVE) ? (float)6.875f : (float)1.0f ) :
+                               ( (pParams->ucSweepMode==SWEEP_LINEAR)    ? (float)pParams->dSweepStart : (float)pParams->dSweepCenter ));
 
 
 
-        dFirstMarker = modf( 100.0f - log10( (double)pParams->dSweepStart / dFactor2 ) * dFactor1 , &dOne );
+        dFirstMarker = modff( 100.0f - log10( (float)pParams->dSweepStart / dFactor2 ) * dFactor1 , &dOne );
         dLastMarker = dFirstMarker + (uint16_t)dCountMarker ;
 
 
         g_dFirstLogMarker = dFirstMarker * g_dDistanceMarker;
-        g_dLastLogMarker  = dLastMarker  * g_dDistanceMarker + (double)SWEEP_UPDATE_INTERVAL ;
+        g_dLastLogMarker  = dLastMarker  * g_dDistanceMarker + (float)SWEEP_UPDATE_INTERVAL ;
 
 
-        double dFactor3 = ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (double)2.0f : (double)10.0f );
+        float dFactor3 = ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (float)2.0f : (float)10.0f );
 
-        g_dFirstLinMarkerLow  = pow( dFactor3, dFirstMarker ) * xg_uiSweepStartFrequency;
-        g_dFirstLinMarkerHigh = pow( dFactor3, dLastMarker  ) * xg_uiSweepStartFrequency;
+        g_dFirstLinMarkerLow  = powf( dFactor3, dFirstMarker ) * xg_uiSweepStartFrequency;
+        g_dFirstLinMarkerHigh = powf( dFactor3, dLastMarker  ) * xg_uiSweepStartFrequency;
 
 
 
-        double dSwitchPoint;
-        double fLevel;
+        float dSwitchPoint;
+        float fLevel;
 
         // 4000 = used DAC counts, 8.0 (0.2) = scale end
         // value, 2.0f = amplification of output buffer
@@ -495,7 +496,7 @@ void CalculateSweepParameters(void)
 
 }
 
-void LIMIT_DOUBLE(double *param, double min, double max)
+void LIMIT_DOUBLE(float *param, float min, float max)
 {
     if (*param > max)
         *param = max;
@@ -860,7 +861,7 @@ void JobLoop()
 {
     int8_t i;
     uint16_t u;
-    double d;
+    float d;
     static uint8_t ucSwitchDelay = 0;
 
     // approx. 280 us cycle time when idle
@@ -877,10 +878,10 @@ void JobLoop()
 
         d = 0;
         for(i=0; i<TRMSC_BUFFER_SIZE; i++) d+=g_dTRMSC_RMS_Buffer[i];
-        g_dTRMSC_RMS = d / (double)TRMSC_BUFFER_SIZE;
+        g_dTRMSC_RMS = d / (float)TRMSC_BUFFER_SIZE;
         d = 0;
         for(i=0; i<TRMSC_BUFFER_SIZE; i++) d+=g_dTRMSC_Peak_Buffer[i];
-        g_dTRMSC_Peak = d / (double)TRMSC_BUFFER_SIZE;
+        g_dTRMSC_Peak = d / (float)TRMSC_BUFFER_SIZE;
 
         // auto range function
         if(RANGE_AUTO == Params.ucRange)
@@ -1000,10 +1001,19 @@ void jobExecute()
     {
         // if burst is active, reset burst timer and state before
         // changing waveform
-        if(pParams->iBurstOnOff)
+        if (pParams->iBurstOnOff)
         {
             g_ucBurstState = 0;
             ATOMIC_RW(xg_uBurstTimer, 0);
+        }
+
+        // stop any PWM burst that may be going on
+        if (Params.iPWMimpulses != 0)
+        {
+ #ifdef COMPILE_WITH_PWM
+           ATOMIC_RW(g_iPWMimpulseCount, 0);
+#endif           
+		   PORTC &= ~ucSyncOut;
         }
 
         // set new waveform
@@ -1037,7 +1047,7 @@ void jobExecute()
             l = pParams->iLogicLo;
 
             SetOffsetVoltage((l + h) >> 1);                         // calibration done in HW for LOGIC and PWM
-            SetLevel((double)(h-l)/1000.0f);
+            SetLevel((float)(h-l)/1000.0f);
         }
     }
     // every other waveform: set normal offset and level
@@ -1088,7 +1098,7 @@ void jobExecute()
     // Adjust dBU 2 DACLevel (sine rms) => SetLevel adjusts to Waveform
     if (pParams->dBULevel != LastParams.dBULevel)
     {
-        pParams->dLevel = 774.597f * pow(10, (pParams->dBULevel/20.0f));
+        pParams->dLevel = 774.597f * powf(10, (pParams->dBULevel/20.0f));
         CrossCalcLevel(LEVEL2PEAKLEVEL);
         LastParams.dBULevel = pParams->dBULevel;
         LastParams.dLevel = -1; // force sweep to recalculate parameters
@@ -1186,13 +1196,23 @@ void jobExecute()
 
 #ifdef COMPILE_WITH_PWM
 
-#ifdef PWM_SHOW_PULSES
     // Trigger Pulses for non-continuous mode on every change per menu
     if (LastParams.iPWMimpulses!=Params.iPWMimpulses)
     {
-        ATOMIC_RW(g_iPWMimpulseCount, Params.iPWMimpulses);
-    }
+
+        // stop any PWM burst that may be going on
+        if (Params.iPWMimpulses == 0)
+        {
+            ATOMIC_RW(g_iPWMimpulseCount, 0);
+            PORTC &= ~ucSyncOut;
+        }
+#ifdef PWM_SHOW_PULSES // when >> count is changed<< by menu (by default: Button press or command 71)
+        else
+        {
+            ATOMIC_RW(g_iPWMimpulseCount, Params.iPWMimpulses);
+        }
 #endif
+    }
 
 #ifdef COMPILE_WITH_PWM_OC1A
     if (LastParams.ucPWMpolarity!=Params.ucPWMpolarity)
@@ -1210,7 +1230,11 @@ void jobExecute()
             PORTD |= (1<<PD5);
         }
 
-        if (Params.iPWMimpulses) ATOMIC_RW(g_iPWMimpulseCount, 1); // run one pulse to clear the PWM logic
+        if (Params.iPWMimpulses)  // run one pulse to clear the PWM logic
+        {
+            ATOMIC_RW(g_ucLastPulse, 1);       // suppress the sync
+            ATOMIC_RW(g_iPWMimpulseCount, 1);
+        }
     }
 #else
     if (LastParams.ucPWMpolarity!=Params.ucPWMpolarity)
@@ -1220,7 +1244,6 @@ void jobExecute()
             // invert PWM
             TCCR1A |= (1<<COM1B0);
             PORTD &= ~(1<<PD4);
-
         }
         else
         {
@@ -1229,7 +1252,11 @@ void jobExecute()
             PORTD |= (1<<PD4);
         }
 
-        if (Params.iPWMimpulses) ATOMIC_RW(g_iPWMimpulseCount, 1); // run one pulse to clear the PWM logic
+        if (Params.iPWMimpulses)  // run one pulse to clear the PWM logic
+        {
+            ATOMIC_RW(g_ucLastPulse, 1);       // suppress the sync
+            ATOMIC_RW(g_iPWMimpulseCount, 1);
+        }
     }
 #endif
 

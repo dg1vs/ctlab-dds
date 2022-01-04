@@ -31,7 +31,7 @@
 #define VERSSTRLONG_PWM  "1.0d[DDSp C by HB, TF, JW and PSC]"
 
 
-#define COMPILE_WITH_PWM 1         // default only OC1B / PD4  // requires hardware change // will replace ext. Audio-in with PWM menu/function
+//#define COMPILE_WITH_PWM 1         // default only OC1B / PD4  // requires hardware change // will replace ext. Audio-in with PWM menu/function
 //#define COMPILE_WITH_PWM_OC1A 1  // option additionally to COMPILE_WITH_PWM / OC1A/PD5, TODO: auto detection of PWM on PD4/PD5
 //define PWM_SHOW_PULSES 1         // show pulses when manually changing the value via encoder
 
@@ -204,14 +204,14 @@ typedef union
 
 typedef struct
 {
-    double dFrequency;         //* Frequency in Hertz, 3 digits fraction
-    double dLevel;             //* Voltage effective in mV
-    double dPeakLevel;         //* Peak2PeakLevel in mV
-    double dBULevel;           //* Voltage effective in dBU
+    float dFrequency;         //* Frequency in Hertz, 3 digits fraction
+    float dLevel;             //* Voltage effective in mV
+    float dPeakLevel;         //* Peak2PeakLevel in mV
+    float dBULevel;           //* Voltage effective in dBU
     int16_t iOffset;           //* in mV
-    double dSweepStart,        //* for Start/End Sweep Mode
+    float dSweepStart,        //* for Start/End Sweep Mode
            dSweepEnd;          //* Both in Hertz
-    double dSweepCenter,       //* for Center/Span Sweep Mode, SweepCenter in Hz
+    float dSweepCenter,       //* for Center/Span Sweep Mode, SweepCenter in Hz
            dSweepSpanFactor;       //* Factor
     int16_t iSweepTime;        //* in ms
     int16_t iLogicHi, iLogicLo; //* logic levels in mV
@@ -220,7 +220,7 @@ typedef struct
     int16_t iBurstOnOff;       //* 0 = Burst off; 2-maxint = Burst on, use burstonoff as 10 times ms burst off;
                                //* 1 = Burst on, use Parameters burst1 and burst0, set bost to 1 if not populated.
     uint8_t ucSerBaudReg;
-    double dInputGainFactor;   //* Factor to multiply ADC3 for TRMS Value
+    float dInputGainFactor;   //* Factor to multiply ADC3 for TRMS Value
     uint8_t ucRange;           //* Input Range for TRMSC
     uint8_t ucPermanentTRMSC;
     int16_t iPermanentTRMSC_Delay;
@@ -228,21 +228,21 @@ typedef struct
     uint8_t ucSweepMenu;
     uint8_t ucSweepMarker;
     uint8_t ucSweepMarkerMode;
-    double  dSweepMarkerHeight;
+    float  dSweepMarkerHeight;
     uint8_t ucSweepMode;
     uint8_t ucSweepSlope;
     uint8_t ucVolt_dB;
     uint8_t ucDisplayedMenu;    //* Current Menu on Panel (for DSP-Command)
     uint8_t ucAutosave;
     uint8_t ucEncoderPrescaler;
-    double  dLevelScaleLow;     //* Level correction  <200 mV
-    double  dLevelScaleHigh;    //* Level correction  >=200 mV
-    double  dRMSScale100m;      //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
-    double  dRMSScale1;         //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
-    double  dRMSScale10;        //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
-    double  dRMSScale100;       //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
-    double  dOutGain;           //* Output Gain
-    double  dAttnFactor;        //* Attenuation 1/40
+    float  dLevelScaleLow;     //* Level correction  <200 mV
+    float  dLevelScaleHigh;    //* Level correction  >=200 mV
+    float  dRMSScale100m;      //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
+    float  dRMSScale1;         //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
+    float  dRMSScale10;        //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
+    float  dRMSScale100;       //* Input correction  100 mV  // 100 mV, 1V, 10V, 100V
+    float  dOutGain;           //* Output Gain
+    float  dAttnFactor;        //* Attenuation 1/40
     int16_t iPWMDuty;
     int16_t iPWMimpulses;
     uint8_t ucPWMpolarity;
@@ -260,10 +260,10 @@ extern uint8_t g_ucErrCount;
 
 extern uint8_t g_ucLCDpresent;
 
-extern double g_dTRMSC_RMS;
-extern double g_dTRMSC_Peak;
-extern double g_dLastTRMSC_RMS;
-extern double g_dLastTRMSC_Peak;
+extern float g_dTRMSC_RMS;
+extern float g_dTRMSC_Peak;
+extern float g_dLastTRMSC_RMS;
+extern float g_dLastTRMSC_Peak;
 
 extern const char g_cVersStrLong[];
 extern char g_cSerInpStr[];
@@ -278,9 +278,9 @@ void jobActivityTimer(void);
 
 void jobPanel(void);
 void SwitchRange(uint8_t ucRange);
-double GetTRMSC_RMS(void);
-double GetTRMSC_Peak(void);
-double GetTRMSC_dBU(void);
+float GetTRMSC_RMS(void);
+float GetTRMSC_Peak(void);
+float GetTRMSC_dBU(void);
 
 extern const uint16_t g_uiTerzArray[];
 

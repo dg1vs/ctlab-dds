@@ -18,18 +18,16 @@
  */
 
 
-
-#include "dds.h"
 #include <avr/pgmspace.h>
 #include <stdio.h>
 #include <math.h>
+#include "dds.h"
 #include "main.h"
 #include "panel.h"
-#include "encoder.h"
-#include "lcd.h"
+#include "Encoder.h"
+#include "Lcd.h"
 #include "dds-hw.h"
 #include "timer.h"
-
 
 
 
@@ -55,7 +53,7 @@
 #define PANEL_PRINT_CHOICE(x)            Lcd_OverWrite_P(COLUMN_MAX + 1 - sizeof(x), 1, sizeof(x)-1, PSTR((x)));
 #define PANEL_PRINT_CHOICE_WITH_ENTER(x) Lcd_OverWrite_P(COLUMN_MAX     - sizeof(x), 1, sizeof(x)-1, PSTR((x))); Panel_PrintEnterChoice();
 
-#define PANEL_PRINT_FIRMWARE_UPDATE(x)   Lcd_OverWrite_P(0, 0, 8, PSTR("FIRMWARE")); LCDOverwrite_P(0, 1, 8, PSTR(" UPDATE "));
+#define PANEL_PRINT_FIRMWARE_UPDATE(x)   Lcd_OverWrite_P(0, 0, 8, PSTR("FIRMWARE")); Lcd_OverWrite_P(0, 1, 8, PSTR(" UPDATE "));
 
 #endif
 
@@ -73,7 +71,7 @@ static void Panel_ScrollMenuName(menu_entry_t *g_currentMenuItem);
 
 // old functions
 static void SettingsSaveEnterFunction(void);
-static void Panel_OutputValue(double f, int16_t i, uint8_t uType);
+static void Panel_OutputValue(float f, int16_t i, uint8_t uType);
 
  
 const PROGMEM uint8_t cursor[CURSOR_ARRAY_SIZE] =
@@ -437,7 +435,7 @@ const PROGMEM menu_entry_t SubmenuPWMPolarity =
 {
     .cName = "PWM Pulse Polarity",
     .pEncoderFunction = UCEncoderFunction,
-    .pEnterFunction = null,
+    .pEnterFunction = PWMDutyCountEnterFunction,
     .pUpdateDisplayFunction = PWMDutyPolarityUpdateDisplayFunction,
     .pSubmenu = null,
     .pPrevious = (void*)&SubmenuPWMCount,
@@ -964,7 +962,7 @@ void jobPanel(void)
         g_ucScrollOffset = 0;
 
         // set new acceleration values
-        SetEncoderAcceleration(pgm_read_word(&g_currentMenuItem->iEI1),
+        Encoder_SetAcceleration(pgm_read_word(&g_currentMenuItem->iEI1),
                                pgm_read_word(&g_currentMenuItem->iEI2),
                                pgm_read_word(&g_currentMenuItem->iEI3),
                                pgm_read_word(&g_currentMenuItem->iEI4));
@@ -1026,7 +1024,7 @@ void jobPanel(void)
 
     // read encoder position
     // current parameter is changed if necessary
-    iEncoderPos = GetAndResetEncPos();
+    iEncoderPos = Encoder_GetAndResetPosition();
     if(iEncoderPos)
     {
         // reset timer for permanent TRMSC display to allow parameter
@@ -1098,7 +1096,7 @@ void jobPanel(void)
 //    prec: Precision which is used to round (0.1, 1, 10, ...)
 // <- The result is placed in input parameter *d
 //----------------------------------------------------------------------------
-void RoundPrecision(double *d, double prec)
+void RoundPrecision(float *d, float prec)
 {
     int16_t i;
 
@@ -1109,19 +1107,19 @@ void RoundPrecision(double *d, double prec)
 //----------------------------------------------------------------------------
 // TerzDecode
 //
-// Converts Terz frequency codes to double values
+// Converts Terz frequency codes to float values
 //
 // -> code: Terz frequency code
 // <- frequency value corresponding to code
 //----------------------------------------------------------------------------
-double TerzDecode(uint16_t code)
+float TerzDecode(uint16_t code)
 {
 // Coding for frequencies: (ui_TerzArray[x]>>4 ) * 10 ^ ( int16_t)(ui_TerzArray[x] & 0x000F ) - 2)
 // 3 MSB nibbles: frequency f
 // LSB nibble: exponent e  (with offset 2)
 // frequency = f*10^(e-2)
 
-    return  (double) ( code >> 4 ) *  pow( 10 , ( (int8_t)( code & 0x000F ) - 2 )) ;
+    return  (float) ( code >> 4 ) *  powf( 10 , ( (int8_t)( code & 0x000F ) - 2 )) ;
 }
 
 //----------------------------------------------------------------------------
@@ -1134,7 +1132,7 @@ double TerzDecode(uint16_t code)
 //----------------------------------------------------------------------------
 
 
-void FindTerz(double *pdFrequency, int16_t UpDown)
+void FindTerz(float *pdFrequency, int16_t UpDown)
 {
     uint8_t  i = 0;
     uint8_t  t = 0;
@@ -1184,13 +1182,13 @@ void FindTerz(double *pdFrequency, int16_t UpDown)
 //----------------------------------------------------------------------------
 void FrequencyEncoderFunction(int16_t iEncoderPos, void *pParam)
 {
-    double *d = (double*)pParam;
-    double dIncrement;
+    float *d = (float*)pParam;
+    float dIncrement;
 
 #ifdef COMPILE_WITH_PWM
     uint16_t c;
     uint16_t uPrescaler;
-    double dTemp = *((double*)pParam);
+    float dTemp = *((float*)pParam);
 #endif
 
     if (g_ucFrequencyMode == FREQUENCY_CONT)
@@ -1226,7 +1224,7 @@ void FrequencyEncoderFunction(int16_t iEncoderPos, void *pParam)
         }
 
         // calculate new desired frequency
-        *d += (double)iEncoderPos * dIncrement;
+        *d += (float)iEncoderPos * dIncrement;
         RoundPrecision(d, dIncrement);
 
     }
@@ -1297,11 +1295,11 @@ void FrequencyEncoderFunction(int16_t iEncoderPos, void *pParam)
 //----------------------------------------------------------------------------
 void SweepDoubleEncoderFunction(int16_t iEncoderPos, void *pParam)
 {
-    double *d = (double*)pParam;
+    float *d = (float*)pParam;
 
     // scale the increment/decrement appropriately
 
-    *d += (double)iEncoderPos * 0.01f;
+    *d += (float)iEncoderPos * 0.01f;
 }
 
 //----------------------------------------------------------------------------
@@ -1314,7 +1312,7 @@ void SweepDoubleEncoderFunction(int16_t iEncoderPos, void *pParam)
 //----------------------------------------------------------------------------
 void FrequencyUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 {
-    double *d = (double*)pParam;
+    float *d = (float*)pParam;
 
     // check all frequency values for update because this function displays
     // main frequency, sweep start and sweep end frequency
@@ -1370,7 +1368,7 @@ void FrequencyEnterFunction()
 //----------------------------------------------------------------------------
 void SweepDoubleUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 {
-    double *d = (double*)pParam;
+    float *d = (float*)pParam;
 
     // check all frequency values for update because this function displays
     // main frequency, sweep start and sweep end frequency
@@ -1395,8 +1393,8 @@ void SweepDoubleUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 //----------------------------------------------------------------------------
 void LevelEncoderFunction(int16_t iEncoderPos, void *pParam )
 {
-    double *d = (double*)pParam;
-    double dIncrement;
+    float *d = (float*)pParam;
+    float dIncrement;
 
 
     if ( iEncoderPos >= 0)  // to make range transitions more smooth, but wait for more memory
@@ -1427,7 +1425,7 @@ void LevelEncoderFunction(int16_t iEncoderPos, void *pParam )
         }
     }
 
-    *d += (double)iEncoderPos * dIncrement;
+    *d += (float)iEncoderPos * dIncrement;
 
     RoundPrecision(d, dIncrement);
 }
@@ -1442,7 +1440,7 @@ void LevelEncoderFunction(int16_t iEncoderPos, void *pParam )
 //----------------------------------------------------------------------------
 void LevelUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 {
-    double *d = (double*)pParam;
+    float *d = (float*)pParam;
 
     if((LastParams.dLevel!=*d) || ucForceUpdate )
     {
@@ -1464,7 +1462,7 @@ void LevelUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 //----------------------------------------------------------------------------
 void PeakLevelUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 {
-    double *d = (double*)pParam;
+    float *d = (float*)pParam;
 
     if((LastParams.dPeakLevel != *d) || ucForceUpdate )
     {
@@ -1757,7 +1755,7 @@ void LogicLevelUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
             (LastParams.iLogicLo!=Params.iLogicLo)||ucForceUpdate)
     {
         // output parameter to Panel
-        Panel_OutputValue(0, (double)*i, LCD_TYPE_OFFSET);
+        Panel_OutputValue(0, (float)*i, LCD_TYPE_OFFSET);
     }
 }
 
@@ -2015,15 +2013,15 @@ void TRMSC_PermanentUpdateDisplayFunction(uint8_t ucForceUpdate,
 //
 // Gets called periodically to update TRMSC level display
 //
-// -> pParam: pointer to double RMS or peak
+// -> pParam: pointer to float RMS or peak
 // <- --
 //----------------------------------------------------------------------------
 void TRMSC_LevelUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
 {
     // TODO warum 16?????
     char s[16];
-    double *d = pParam;
-    double dB;
+    float *d = pParam;
+    float dB;
 
     if((g_dLastTRMSC_RMS!=g_dTRMSC_RMS)|| (g_dLastTRMSC_Peak!=g_dTRMSC_Peak)|| ucForceUpdate)
     {
@@ -2269,10 +2267,10 @@ static void SettingsSaveEnterFunction(void)
 //          = LCD_TYPE_TIME_MS: output time in milliseconds
 // <- --
 //----------------------------------------------------------------------------
-static void Panel_OutputValue(double f, int16_t i, uint8_t uType)
+static void Panel_OutputValue(float f, int16_t i, uint8_t uType)
 {
     char s[10];
-    double dB;
+    float dB;
 
     // isolate fractional part of i without sign
     int16_t j = ((i<0)?-i:i) % 1000;
@@ -2367,7 +2365,7 @@ static void Panel_OutputValue(double f, int16_t i, uint8_t uType)
 
 #ifdef COMPILE_WITH_PWM
         case LCD_TYPE_PERCENT:
-            sprintf_P(s, PSTR("%5.1f %% "), (double)i / 10.0f);
+            sprintf_P(s, PSTR("%5.1f %% "), (float)i / 10.0f);
             break;
 
         case LCD_TYPE_COUNT:
@@ -2430,6 +2428,7 @@ menu_entry_t *findMenuEntry(uint8_t ucIdentifier)
 
 
 extern const PROGMEM char g_cVersStrShort_P[]; // can't be moved to headerfile ;-(
+
 
 void Panel_SplashScreen(void)
 {

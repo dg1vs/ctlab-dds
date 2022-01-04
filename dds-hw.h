@@ -85,7 +85,7 @@ void SetRelay(uint8_t uRelay, uint8_t uState);
 void SetAttenuation(uint16_t u);
 #define SetLED(ucLED, ucState)  if(ucState) PORTD &= ~ucLED; else   PORTD |= ucLED;
 void SetOffsetVoltage(int16_t iVoltage);
-void SetLevel(double fLevel);
+void SetLevel(float fLevel);
 
 void AD9833_Init(void);
 void AD9833_SetFrequency(uint32_t u);

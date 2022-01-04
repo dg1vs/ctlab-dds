@@ -24,7 +24,7 @@
 
 #include "timer.h"
 #include "main.h"
-#include "encoder.h"
+#include "Encoder.h"
 #include "dds-hw.h"
 
 //----------------------------------------------------------------------------
@@ -68,10 +68,10 @@ volatile uint16_t g_uTurnSymbolTimer = 0;
 #endif
 
 // variables for sweep
-volatile double xg_dSweepFrequency;
-volatile double g_dLastSweepFrequency;
-volatile double g_dSweepFrequencyFactorUp;
-volatile double g_dSweepFrequencyFactorDown;
+volatile float xg_dSweepFrequency;
+volatile float g_dLastSweepFrequency;
+volatile float g_dSweepFrequencyFactorUp;
+volatile float g_dSweepFrequencyFactorDown;
 
 volatile uint32_t xg_uiSweepStartFrequency;
 volatile uint32_t xg_uiSweepEndFrequency;
@@ -81,13 +81,13 @@ volatile int16_t g_iSweepIndex = 0;
 volatile uint16_t g_uSweepTimer = 0;
 volatile uint8_t g_ucSweepDirection = SWEEP_UP;
 volatile uint8_t g_ucSweepSync = 0;
-volatile double  g_dDistanceMarker = 1.0f;
-volatile double  g_dFirstLogMarker = 0.0f;
-volatile double  g_dLastLogMarker = 0.0f;
-volatile double  g_dFirstLinMarkerLow = 0.0f;
-volatile double  g_dFirstLinMarkerHigh = 0.0f;
-volatile double  g_dMarkerIndex = 0;
-volatile double  g_dMarkerHeight = 1.2f;
+volatile float  g_dDistanceMarker = 1.0f;
+volatile float  g_dFirstLogMarker = 0.0f;
+volatile float  g_dLastLogMarker = 0.0f;
+volatile float  g_dFirstLinMarkerLow = 0.0f;
+volatile float  g_dFirstLinMarkerHigh = 0.0f;
+volatile float  g_dMarkerIndex = 0;
+volatile float  g_dMarkerHeight = 1.2f;
 volatile uint8_t g_ucSweepMark = 0;
 volatile uint16_t g_uiMarkerLevel;
 volatile uint16_t g_uiNormalLevel;
@@ -95,6 +95,7 @@ volatile uint16_t g_uiNormalLevel;
 #ifdef COMPILE_WITH_PWM
 
 volatile int16_t g_iPWMimpulseCount = 0;
+volatile uint8_t g_ucLastPulse = 0;
 
 //----------------------------------------------------------------------------
 // ISR(TIMER1_OVF_vect)
@@ -107,41 +108,79 @@ volatile int16_t g_iPWMimpulseCount = 0;
 //----------------------------------------------------------------------------
 #if defined(__AVR_ATmega32__) || defined(__AVR_ATmega324P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega644P__) || defined(__AVR_ATmega1284P__) || defined(__AVR_AT90CAN128__)
 ISR(TIMER1_OVF_vect)
+{
+ //    static uint8_t ucLastPulse = 0;
+ 
+ if (Params.iPWMimpulses)
+ {
+     if (g_iPWMimpulseCount)
+     {
+         if ( g_ucLastPulse == 0 )
+         {
+             g_ucLastPulse = 2;        // used to trigger the sync output in COMPA/B interrupt
+         }
+
+         g_iPWMimpulseCount--;
+         #ifdef COMPILE_WITH_PWM_OC1A
+         TCCR1A |= (1<<COM1A1);
+         #else
+         TCCR1A |= (1<<COM1B1);
+         #endif
+     }
+     else
+     {
+         if ( g_ucLastPulse != 0 )
+         {
+             PORTC &= ~ucSyncOut;
+             g_ucLastPulse = 0;
+         }
+
+         #ifdef COMPILE_WITH_PWM_OC1A
+         TCCR1A &= ~(1<<COM1A1);
+         #else
+         TCCR1A &= ~(1<<COM1B1);
+         #endif
+     }
+ }
+ else // continuous mode PWM when 0
+ {
+     #ifdef COMPILE_WITH_PWM_OC1A
+     TCCR1A |= (1<<COM1A1);
+     #else
+     TCCR1A |= (1<<COM1B1);
+     #endif
+ }
+}
+
+
+
+//----------------------------------------------------------------------------
+// ISR(TIMER1_COMPx_vect)
+//
+// Timer 1 compare A/B interrupt
+// when reaching the compare, the Sync output is triggered at the same time as the PWM outputs the leading slope
+//
+// -> --
+// <- --
+//----------------------------------------------------------------------------
+#ifdef COMPILE_WITH_PWM_OC1A
+ISR(TIMER1_COMPA_vect)
 #else
-#error Please define your TIMER1 code
+ISR(TIMER1_COMPB_vect)
 #endif
 {
     if (Params.iPWMimpulses)
     {
-//        PORTC ^= ucSyncOut; // test output
-
-        if (g_iPWMimpulseCount)
+        if ( g_ucLastPulse == 2 )
         {
-            g_iPWMimpulseCount--;
-#ifdef COMPILE_WITH_PWM_OC1A
-            TCCR1A |= (1<<COM1A1);
-#else
-            TCCR1A |= (1<<COM1B1);
-#endif
+            PORTC |= ucSyncOut;
+            g_ucLastPulse = 1;
         }
-        else
-        {
-#ifdef COMPILE_WITH_PWM_OC1A
-            TCCR1A &= ~(1<<COM1A1);
-#else
-            TCCR1A &= ~(1<<COM1B1);
-#endif
-        }
-    }
-    else // continuous mode PWM when 0
-    {
-#ifdef COMPILE_WITH_PWM_OC1A
-        TCCR1A |= (1<<COM1A1);
-#else
-        TCCR1A |= (1<<COM1B1);
-#endif
     }
 }
+#else
+#error Please define your TIMER1 code
+#endif
 
 #endif // COMPILE_WITH_PWM
 
@@ -311,7 +350,7 @@ ISR(TIMER2_COMPA_vect)
                     {
                         if ( uiSweepFrequency >= g_dMarkerIndex )
                         {
-                            g_dMarkerIndex *= ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (double)2.0f : (double) 10.0f);    // ( ? : ) saves space
+                            g_dMarkerIndex *= ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (float)2.0f : (float) 10.0f);    // ( ? : ) saves space
                             g_ucSweepMark = 1;
                         }
                         else
@@ -323,7 +362,7 @@ ISR(TIMER2_COMPA_vect)
                     {
                         if ( uiSweepFrequency <= g_dMarkerIndex )
                         {
-                            g_dMarkerIndex *= ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (double)0.5f : (double) 0.1f);  // ( ? : ) saves space
+                            g_dMarkerIndex *= ((pParams->ucSweepMarker==MARKER_OCTAVE) ? (float)0.5f : (float) 0.1f);  // ( ? : ) saves space
                             g_ucSweepMark = 1;
                         }
                         else
@@ -338,8 +377,8 @@ ISR(TIMER2_COMPA_vect)
                 break;
 
                 case SWEEP_LOG:
-                    // note: the concept for this mode is keep interrupt time as short as possible by using just one double multiplication
-                    //       if repeated too often, the "almost infinite" resolution of (double) is not exact, but good enough.
+                    // note: the concept for this mode is keep interrupt time as short as possible by using just one float multiplication
+                    //       if repeated too often, the "almost infinite" resolution of (float) is not exact, but good enough.
                     //       however, the start/end values for the frequencies are set for every sweep, so there shouldn't be a noticeable deviation.
                 {
                     switch(pParams->ucSweepSlope)
@@ -516,7 +555,7 @@ ISR(TIMER2_COMPA_vect)
 //  log sweep w/ markers    = 116   us max
 
 //vvvvvvvvvvvv 12.3 us max
-    jobEncoder();
+    Encoder_MainFunction();
 //^^^^^^^^^^^^ 12.3 us max
 
 }
@@ -532,9 +571,9 @@ ISR(TIMER2_COMPA_vect)
 //    uPrescaler: Prescaler to use for calculation
 // <- calculated timer value
 //----------------------------------------------------------------------------
-uint16_t CalculatePWMTimerValue(double dFrequency, uint16_t uPrescaler)
+uint16_t CalculatePWMTimerValue(float dFrequency, uint16_t uPrescaler)
 {
-    return ((uint16_t)((double)(F_CPU / uPrescaler) / dFrequency) - 1);
+    return ((uint16_t)((float)(F_CPU / uPrescaler) / dFrequency) - 1);
 }
 
 //----------------------------------------------------------------------------
@@ -547,9 +586,9 @@ uint16_t CalculatePWMTimerValue(double dFrequency, uint16_t uPrescaler)
 //    uPrescaler: Prescaler to use for calculation
 // <- calculated frequency
 //----------------------------------------------------------------------------
-double CalculatePWMFrequencyValue(uint16_t iTimerValue, uint16_t uPrescaler)
+float CalculatePWMFrequencyValue(uint16_t iTimerValue, uint16_t uPrescaler)
 {
-    return ((double)(F_CPU / uPrescaler)) / (double)(iTimerValue + 1);
+    return ((float)(F_CPU / uPrescaler)) / (float)(iTimerValue + 1);
 }
 
 //----------------------------------------------------------------------------
@@ -566,7 +605,7 @@ double CalculatePWMFrequencyValue(uint16_t iTimerValue, uint16_t uPrescaler)
 // -> dFrequency: pointer to frequency to calculate the prescaler for
 // <-
 //----------------------------------------------------------------------------
-void SetPWMPrescaler(double *dFrequency, uint16_t *uPrescaler)
+void SetPWMPrescaler(float *dFrequency, uint16_t *uPrescaler)
 {
     if(*dFrequency<5.0f)
     {
@@ -695,7 +734,7 @@ void InitTimer(void)
 // clock prescaler = 1
 
 #ifdef COMPILE_WITH_PWM_OC1A
-    TCCR1A = (1<<COM1A1)|(1<<COM1B1)|(1<<WGM11)|(0<<WGM10);
+    TCCR1A = (1<<COM1A1)|(1<<WGM11)|(0<<WGM10);
 #else
     TCCR1A = (1<<COM1B1)|(1<<WGM11)|(0<<WGM10);
 #endif
@@ -708,8 +747,14 @@ SET_TIMER1_PRESCALER_1();
 #endif
     OCR1B = F_CPU / 2000UL; // default 50%
 
-// initialize Timer 1 Overflow interrupt for PWM impulse counting (same for both options OC1B or OC1A)
-    TIMSK |= (1<<TOIE1);
+// enable Timer 1 Overflow interrupt for PWM impulse counting (same for both options OC1B or OC1A)
+// also enable Timer 1 Compare A/B interrupt (different for options OC1A or OC1B)
+#ifdef COMPILE_WITH_PWM_OC1A
+    TIMSK1 |= (1<<TOIE1)|(1<<OCIE1A);
+#else
+    TIMSK1 |= (1<<TOIE1)|(1<<OCIE1B);
+#endif
+
 
 #endif
 

@@ -590,9 +590,9 @@ uint8_t AD9833_SetWaveform(uint8_t ucWave)
 // -> fLevel = output level in Volts (eff)
 // <- --
 //----------------------------------------------------------------------------
-void SetLevel(double fLevel)
+void SetLevel(float fLevel)
 {
-    double dSwitchPoint;
+    float dSwitchPoint;
 
 
     // 4000 = used DAC counts, 8.0 (0.2) = scale end

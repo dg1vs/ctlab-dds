@@ -20,7 +20,7 @@
 #define PANEL_H_
 
 #include <inttypes.h>
-#include "lcd.h" // used for inlinne
+#include "Lcd.h" // used for inlinne
 #include "dds.h"
 
 //----------------------------------------------------------------------------

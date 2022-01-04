@@ -99,7 +99,7 @@ typedef struct _PARAMTABLE
     uint8_t SubCh; // Command ordinal
     union
     {
-        double (*get_f_Function)(void);
+        float (*get_f_Function)(void);
         int32_t (*get_l_Function)(void);
         int16_t (*get_i_Function)(void);
         uint8_t (*get_b_Function)(void);
@@ -109,7 +109,7 @@ typedef struct _PARAMTABLE
         {
             union
             {
-                double* f;
+                float* f;
                 int32_t* l;
                 int16_t* i;
                 uint16_t* u;
@@ -118,7 +118,7 @@ typedef struct _PARAMTABLE
             } ram;
             union
             {
-                double* f;
+                float* f;
                 int32_t* l;
                 int16_t* i;
                 uint16_t* u; // TODO missing pointer ???????
@@ -127,7 +127,7 @@ typedef struct _PARAMTABLE
             } eep;
         } s;
     } u;
-    uint8_t type        : 3; // Type of function/variable (int, double etc.)
+    uint8_t type        : 3; // Type of function/variable (int, float etc.)
     uint8_t scale       : 4;
     uint8_t rw          : 1; // 0 = read command (returns values to the caller), 1 = write (values to ctlab)
     uint8_t fct         : 2; // 0 = variable access, 1 = function pointer, 2 = special function
@@ -169,7 +169,7 @@ void SwitchRange(uint8_t ucRange)
 }
 
 
-double GetTRMSC_RMS(void)
+float GetTRMSC_RMS(void)
 {
     int16_t ADCValue;
     ADCValue = GetADC(2);
@@ -181,15 +181,15 @@ double GetTRMSC_RMS(void)
     {
         Status.OverVolt = 0;
     };
-    return Status.OverVolt? (double) -9999 : (double) ADCValue * (double) Params.dInputGainFactor;
+    return Status.OverVolt? (float) -9999 : (float) ADCValue * (float) Params.dInputGainFactor;
 }
 
-double GetTRMSC_dBU(void)
+float GetTRMSC_dBU(void)
 {
     return (20 * log10(GetTRMSC_RMS()/774.597));
 }
 
-double GetTRMSC_Peak(void)
+float GetTRMSC_Peak(void)
 {
     int16_t ADCValue;
     ADCValue = GetADC(3);
@@ -201,7 +201,7 @@ double GetTRMSC_Peak(void)
     {
         Status.OverVolt = 0;
     };
-    return Status.OverVolt? (double) -9999 : (double) ADCValue * (double) Params.dInputGainFactor * 2.82842712;
+    return Status.OverVolt? (float) -9999 : (float) ADCValue * (float) Params.dInputGainFactor * 2.82842712;
 }
 
 
@@ -216,13 +216,13 @@ const PROGMEM PARAMTABLE SetParamTable[] =
 
     // Entries to be ordered by Subchannel
     /* FRQ */
-    {.SubCh = 0,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = (double*)-1}},
+    {.SubCh = 0,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = (float*)-1}},
     /* LVL */
-    {.SubCh = 1,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = (double*)-1}},
+    {.SubCh = 1,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = (float*)-1}},
     /* LVP */
-    {.SubCh = 2,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dPeakLevel, .eep.f = (double*)-1}},
+    {.SubCh = 2,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dPeakLevel, .eep.f = (float*)-1}},
     /* DBU */
-    {.SubCh = 3,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dBULevel, .eep.f = (double*)-1}},
+    {.SubCh = 3,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dBULevel, .eep.f = (float*)-1}},
     /* WAV */
     {.SubCh = 4,   .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucWaveForm, .eep.b = (uint8_t*) -1}},
     /* BST */
@@ -242,23 +242,23 @@ const PROGMEM PARAMTABLE SetParamTable[] =
     /* BS1 */
     {.SubCh = 31,  .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.i = &Params.iBurst1, .eep.i = (int16_t*) -1}},
     /* SWS */
-    {.SubCh = 50,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepStart, .eep.f = (double*)-1}},
+    {.SubCh = 50,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepStart, .eep.f = (float*)-1}},
     /* SWE */
-    {.SubCh = 51,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepEnd, .eep.f = (double*)-1}},
+    {.SubCh = 51,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepEnd, .eep.f = (float*)-1}},
     /* SWT */
     {.SubCh = 52,  .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.i = &Params.iSweepTime, .eep.i = (int16_t*) -1}},
     /* SWD */
     {.SubCh = 53,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepSlope, .eep.b = (uint8_t*)-1}},
     /* SWC */
-    {.SubCh = 54,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepCenter, .eep.f = (double*)-1}},
+    {.SubCh = 54,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepCenter, .eep.f = (float*)-1}},
     /* SWF */
-    {.SubCh = 55,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepSpanFactor, .eep.f = (double*)-1}},
+    {.SubCh = 55,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepSpanFactor, .eep.f = (float*)-1}},
     /* SWM */
     {.SubCh = 56,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMode, .eep.b = (uint8_t*)-1}},
     /* SWK */
     {.SubCh = 57,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMarker, .eep.b = (uint8_t*)-1}},
     /* SWH */
-    {.SubCh = 58,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dSweepMarkerHeight, .eep.f = (double*)-1}},
+    {.SubCh = 58,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dSweepMarkerHeight, .eep.f = (float*)-1}},
 //* SWP */
     {.SubCh = 59,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMenu, .eep.b = (uint8_t*)-1}},
 //* SWO */
@@ -363,7 +363,7 @@ void ParseGetParam(uint8_t SubCh)
     uint8_t fract_len = 4;
     union
     {
-        double f;
+        float f;
         int32_t l;
         int16_t i;
         uint8_t b;
@@ -571,7 +571,7 @@ void ParseGetParam(uint8_t SubCh)
     }
 }
 
-void ParseSetParam(uint8_t SubCh, double Param)
+void ParseSetParam(uint8_t SubCh, float Param)
 {
     if (Status.Busy)
     {
@@ -663,13 +663,13 @@ void ParseSetParam(uint8_t SubCh, double Param)
 
         }
 
-        if (Data.u.s.eep.f != (double*)-1)
+        if (Data.u.s.eep.f != (float*)-1)
         {
             uint8_t size;
             switch(Data.type)
             {
                 case PARAM_DOUBLE:
-                    size = sizeof(double);
+                    size = sizeof(float);
                     break;
 
                 case PARAM_BYTE:
