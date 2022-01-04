@@ -165,6 +165,9 @@
     <Compile Include="Common\Uart.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Config\Config.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Config\Config.h">
       <SubType>compile</SubType>
     </Compile>

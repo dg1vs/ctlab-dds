@@ -28,7 +28,7 @@
 #include "Lcd.h"
 #include "dds-hw.h"
 #include "timer.h"
-
+#include "Config.h"
 
 
 #ifdef COMPILE_WITH_DISPLAY204
@@ -73,29 +73,6 @@ static void Panel_ScrollMenuName(menu_entry_t *g_currentMenuItem);
 static void SettingsSaveEnterFunction(void);
 static void Panel_OutputValue(float f, int16_t i, uint8_t uType);
 
- 
-const PROGMEM uint8_t cursor[CURSOR_ARRAY_SIZE] =
-{
-
-    #ifdef COMPILE_WITH_DISPLAY204
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,   // 0 terminated string
-    0x00, 0x08, 0x15, 0x02, 0x08, 0x15, 0x02, 0x00,   // 1 TRMSC symbol EXTRA_EA_DIP_SIGN_TRMSC
-    0x10, 0x18, 0x1c, 0x1e, 0x1f, 0x1f, 0x1f, 0x1f,   // 2 D oben   + S rechts oben
-    0x1f, 0x1f, 0x1f, 0x1f, 0x1e, 0x1c, 0x18, 0x10,   // 3 D unten  + S rechts unten
-    0x01, 0x03, 0x07, 0x0f, 0x1f, 0x1f, 0x1f, 0x1f,   // 4 S links oben
-    0x1f, 0x1f, 0x1f, 0x1f, 0x0f, 0x07, 0x03, 0x01,   // 5 S links unten
-    0x1f, 0x0f, 0x07, 0x03, 0x01, 0x00, 0x00, 0x00,   // 6 S mitte
-    0x00, 0x00, 0x00, 0x10, 0x18, 0x1c, 0x1e, 0x1f,   // 7 S mitte
-    #else
-    0x00, 0x0e, 0x1f, 0x11, 0x1f, 0x0e, 0x00, 0x00,   // 0 ENCODER_NAVIGATION
-    0x00, 0x0e, 0x17, 0x1b, 0x1d, 0x0e, 0x00, 0x00,   // 1 ENCODER_NAVIGATION
-    0x00, 0x0e, 0x1b, 0x1b, 0x1b, 0x0e, 0x00, 0x00,   // 2 ENCODER_NAVIGATION
-    0x00, 0x0e, 0x1d, 0x1b, 0x17, 0x0e, 0x00, 0x00,   // 3 ENCODER_NAVIGATION
-    0x00, 0x08, 0x15, 0x02, 0x08, 0x15, 0x02, 0x00,   // 4 TRMSC symbol EXTRA_EA_DIP_SIGN_TRMSC
-    0x00, 0x04, 0x06, 0x07, 0x06, 0x04, 0x00, 0x00,   // 5 enter symbol EXTRA_EA_DIP_SIGN_ENTER
-    #endif
-
-};
 
 //............................................................................
 // main menu
@@ -1377,7 +1354,7 @@ void SweepDoubleUpdateDisplayFunction(uint8_t ucForceUpdate, void *pParam)
             ucForceUpdate)
     {
         // output parameter to Panel
-        Panel_OutputValue(*d, 0, LCD_TYPE_DOUBLE);
+        Panel_OutputValue(*d, 0, LCD_TYPE_FLOAT);
     }
 }
 
@@ -2359,7 +2336,7 @@ static void Panel_OutputValue(float f, int16_t i, uint8_t uType)
             sprintf_P(s, PSTR("%4d.%1d s"), i/1000, j/100);
             break;
 
-        case LCD_TYPE_DOUBLE:
+        case LCD_TYPE_FLOAT:
             sprintf_P(s, PSTR("%3.2f    "), f);
             break;
 

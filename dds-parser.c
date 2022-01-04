@@ -74,7 +74,7 @@ const PROGMEM char Mnemonics [][4] =
     { 0, 0, 0, 0}       // Terminator
 };
 
-#define PARAM_DOUBLE    0
+#define PARAM_FLOAT    0
 #define PARAM_INT       1
 #define PARAM_BYTE      2
 #define PARAM_STR       3
@@ -216,23 +216,23 @@ const PROGMEM PARAMTABLE SetParamTable[] =
 
     // Entries to be ordered by Subchannel
     /* FRQ */
-    {.SubCh = 0,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = (float*)-1}},
+    {.SubCh = 0,   .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = (float*)-1}},
     /* LVL */
-    {.SubCh = 1,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = (float*)-1}},
+    {.SubCh = 1,   .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = (float*)-1}},
     /* LVP */
-    {.SubCh = 2,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dPeakLevel, .eep.f = (float*)-1}},
+    {.SubCh = 2,   .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dPeakLevel, .eep.f = (float*)-1}},
     /* DBU */
-    {.SubCh = 3,   .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dBULevel, .eep.f = (float*)-1}},
+    {.SubCh = 3,   .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dBULevel, .eep.f = (float*)-1}},
     /* WAV */
     {.SubCh = 4,   .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucWaveForm, .eep.b = (uint8_t*) -1}},
     /* BST */
     {.SubCh = 5,   .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.i = &Params.iBurstOnOff, .eep.i = (int16_t*) -1}},
     /* INL 0 */
-    {.SubCh = 10,  .rw = 0, .fct = 1, .type = PARAM_DOUBLE,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_RMS},
+    {.SubCh = 10,  .rw = 0, .fct = 1, .type = PARAM_FLOAT,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_RMS},
     /* INL 1 */
-    {.SubCh = 11,  .rw = 0, .fct = 1, .type = PARAM_DOUBLE,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_Peak},
+    {.SubCh = 11,  .rw = 0, .fct = 1, .type = PARAM_FLOAT,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_Peak},
     /* INL 2 */
-    {.SubCh = 12,  .rw = 0, .fct = 1, .type = PARAM_DOUBLE,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_dBU},
+    {.SubCh = 12,  .rw = 0, .fct = 1, .type = PARAM_FLOAT,  .scale = SCALE_V,    .u.get_f_Function = &GetTRMSC_dBU},
     /* RNG */
     {.SubCh = 19,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucRange, .eep.b = (uint8_t*)-1}},
     /* DCO */
@@ -242,23 +242,23 @@ const PROGMEM PARAMTABLE SetParamTable[] =
     /* BS1 */
     {.SubCh = 31,  .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.i = &Params.iBurst1, .eep.i = (int16_t*) -1}},
     /* SWS */
-    {.SubCh = 50,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepStart, .eep.f = (float*)-1}},
+    {.SubCh = 50,  .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepStart, .eep.f = (float*)-1}},
     /* SWE */
-    {.SubCh = 51,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepEnd, .eep.f = (float*)-1}},
+    {.SubCh = 51,  .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepEnd, .eep.f = (float*)-1}},
     /* SWT */
     {.SubCh = 52,  .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.i = &Params.iSweepTime, .eep.i = (int16_t*) -1}},
     /* SWD */
     {.SubCh = 53,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepSlope, .eep.b = (uint8_t*)-1}},
     /* SWC */
-    {.SubCh = 54,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepCenter, .eep.f = (float*)-1}},
+    {.SubCh = 54,  .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepCenter, .eep.f = (float*)-1}},
     /* SWF */
-    {.SubCh = 55,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepSpanFactor, .eep.f = (float*)-1}},
+    {.SubCh = 55,  .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dSweepSpanFactor, .eep.f = (float*)-1}},
     /* SWM */
     {.SubCh = 56,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMode, .eep.b = (uint8_t*)-1}},
     /* SWK */
     {.SubCh = 57,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMarker, .eep.b = (uint8_t*)-1}},
     /* SWH */
-    {.SubCh = 58,  .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dSweepMarkerHeight, .eep.f = (float*)-1}},
+    {.SubCh = 58,  .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dSweepMarkerHeight, .eep.f = (float*)-1}},
 //* SWP */
     {.SubCh = 59,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucSweepMenu, .eep.b = (uint8_t*)-1}},
 //* SWO */
@@ -284,9 +284,9 @@ const PROGMEM PARAMTABLE SetParamTable[] =
     /* DSP 9 */
     {.SubCh = 89,  .rw = 1, .fct = 0, .type = PARAM_BYTE,    .scale = SCALE_NONE, .u.s = {.ram.b = &Params.ucEncoderPrescaler, .eep.b = &Params.ucEncoderPrescaler}},
     /* OPT 0, Frequency */
-    {.SubCh = 150, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = &Params.dFrequency}},
+    {.SubCh = 150, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_FREQ, .u.s = {.ram.f = &Params.dFrequency, .eep.f = &Params.dFrequency}},
     /* OPT 1, Init Level */
-    {.SubCh = 151, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = &Params.dLevel}},
+    {.SubCh = 151, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_mV,   .u.s = {.ram.f = &Params.dLevel, .eep.f = &Params.dLevel}},
     /* OPT 2, Init Logic High*/
     {.SubCh = 152, .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_V,    .u.s = {.ram.i = &Params.iLogicHi, .eep.i = &Params.iLogicHi}},
     /* OPT 4, Init Wave Form */
@@ -298,21 +298,21 @@ const PROGMEM PARAMTABLE SetParamTable[] =
     /* OPT 20, Init Offset */
     {.SubCh = 170, .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_V,    .u.s = {.ram.i = &Params.iOffset, .eep.i = &Params.iOffset}},
     /* SCL 0 */
-    {.SubCh = 200, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dLevelScaleLow, .eep.f = &Params.dLevelScaleLow}},
+    {.SubCh = 200, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dLevelScaleLow, .eep.f = &Params.dLevelScaleLow}},
     /* SCL 1 */
-    {.SubCh = 201, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dLevelScaleHigh, .eep.f = &Params.dLevelScaleHigh}},
+    {.SubCh = 201, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dLevelScaleHigh, .eep.f = &Params.dLevelScaleHigh}},
     /* SCL 2 */
-    {.SubCh = 202, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dOutGain, .eep.f = &Params.dOutGain}},
+    {.SubCh = 202, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dOutGain, .eep.f = &Params.dOutGain}},
     /* SCL 3 */
-    {.SubCh = 203, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dAttnFactor, .eep.f = &Params.dAttnFactor}},
+    {.SubCh = 203, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dAttnFactor, .eep.f = &Params.dAttnFactor}},
     /* SCL 10 */
-    {.SubCh = 210, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale100m, .eep.f = &Params.dRMSScale100m}},
+    {.SubCh = 210, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale100m, .eep.f = &Params.dRMSScale100m}},
     /* SCL 11 */
-    {.SubCh = 211, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale1, .eep.f = &Params.dRMSScale1}},
+    {.SubCh = 211, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale1, .eep.f = &Params.dRMSScale1}},
     /* SCL 12 */
-    {.SubCh = 212, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale10, .eep.f = &Params.dRMSScale10}},
+    {.SubCh = 212, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale10, .eep.f = &Params.dRMSScale10}},
     /* SCL 13 */
-    {.SubCh = 213, .rw = 1, .fct = 0, .type = PARAM_DOUBLE,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale100, .eep.f = &Params.dRMSScale100}},
+    {.SubCh = 213, .rw = 1, .fct = 0, .type = PARAM_FLOAT,  .scale = SCALE_NONE, .u.s = {.ram.f = &Params.dRMSScale100, .eep.f = &Params.dRMSScale100}},
     /* ERC */
     {.SubCh = 251, .rw = 1, .fct = 0, .type = PARAM_INT,     .scale = SCALE_NONE, .u.s = {.ram.b = &g_ucErrCount, .eep.b = (uint8_t*)-1}},
     /* SBD */
@@ -401,7 +401,7 @@ void ParseGetParam(uint8_t SubCh)
         // get function
         switch (ParamData.type)
         {
-            case PARAM_DOUBLE:
+            case PARAM_FLOAT:
                 Data.f = ParamData.u.get_f_Function();
                 break;
 
@@ -430,7 +430,7 @@ void ParseGetParam(uint8_t SubCh)
         // variable
         switch(ParamData.type)
         {
-            case PARAM_DOUBLE:
+            case PARAM_FLOAT:
                 Data.f = *ParamData.u.s.ram.f;
                 break;
 
@@ -455,7 +455,7 @@ void ParseGetParam(uint8_t SubCh)
     }
 
     // handle scaling of float variables
-    if (ParamData.type == PARAM_DOUBLE)
+    if (ParamData.type == PARAM_FLOAT)
     {
         switch (ParamData.scale)
         {
@@ -497,7 +497,7 @@ void ParseGetParam(uint8_t SubCh)
     // print the parameters
     switch(ParamData.type)
     {
-        case PARAM_DOUBLE:
+        case PARAM_FLOAT:
             // create a format string, because avrgcc doesn't handle a variable length format specifier like this "%.*f"
             sprintf_P(fmt, PSTR("#%%d:%%d=%%.%df\n"), fract_len);
             printf(fmt, g_ucSlaveCh, SubCh, Data.f);
@@ -619,7 +619,7 @@ void ParseSetParam(uint8_t SubCh, float Param)
                 }
                 break;
 #endif
-            case PARAM_DOUBLE:
+            case PARAM_FLOAT:
                 switch(Data.scale)
                 {
                     case SCALE_PROZ:
@@ -668,7 +668,7 @@ void ParseSetParam(uint8_t SubCh, float Param)
             uint8_t size;
             switch(Data.type)
             {
-                case PARAM_DOUBLE:
+                case PARAM_FLOAT:
                     size = sizeof(float);
                     break;
 

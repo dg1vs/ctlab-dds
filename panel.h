@@ -20,8 +20,9 @@
 #define PANEL_H_
 
 #include <inttypes.h>
-#include "Lcd.h" // used for inlinne
 #include "dds.h"
+#include "Lcd.h" // used for inlinne
+#include "Config.h"
 
 //----------------------------------------------------------------------------
 // LCD formatting constants
@@ -31,7 +32,7 @@
 #define LCD_TYPE_OFFSET             2
 #define LCD_TYPE_FREQUENCY          3
 #define LCD_TYPE_TIME_MS            4
-#define LCD_TYPE_DOUBLE             6
+#define LCD_TYPE_FLOAT              6
 #define LCD_TYPE_TIME_100MS         7
 #define LCD_TYPE_PERCENT            8
 #define LCD_TYPE_COUNT              9
@@ -149,27 +150,17 @@ extern uint8_t g_ucMenuItemChanged;
 #define FREQUENCY_TERZ 1
 extern uint8_t g_ucFrequencyMode;
 
-
-
 #ifdef COMPILE_WITH_DISPLAY204              /* PM 20*4 */
-#define CURSOR_ARRAY_SIZE 8*8
+	#define EXTRA_EA_DIP_SIGN_TRMSC "\x01"
+	#define EXTRA_EA_DIP_SIGN_ENTER "\x10"
+	#define EXTRA_EA_DIP_SIGN_BACK  "\x16"
+
+	#define EXTRA_EA_DIP_SIGN_DOWN  "\x1B"
+	#define EXTRA_EA_DIP_SIGN_UP    "\x1A"
 #else                                       /* PM8 */
-#define CURSOR_ARRAY_SIZE 6*8
-#endif
-
-extern const PROGMEM uint8_t cursor[CURSOR_ARRAY_SIZE];
-
-#ifdef COMPILE_WITH_DISPLAY204              /* PM 20*4 */
-#define EXTRA_EA_DIP_SIGN_TRMSC "\x01"
-#define EXTRA_EA_DIP_SIGN_ENTER "\x10"
-#define EXTRA_EA_DIP_SIGN_BACK  "\x16"
-
-#define EXTRA_EA_DIP_SIGN_DOWN  "\x1B"
-#define EXTRA_EA_DIP_SIGN_UP    "\x1A"
-#else                                       /* PM8 */
-#define EXTRA_EA_DIP_SIGN_TRMSC "\x04"
-#define EXTRA_EA_DIP_SIGN_ENTER "\x05"
-#define EXTRA_EA_DIP_SIGN_BACK  "\x05"
+	#define EXTRA_EA_DIP_SIGN_TRMSC "\x04"
+	#define EXTRA_EA_DIP_SIGN_ENTER "\x05"
+	#define EXTRA_EA_DIP_SIGN_BACK  "\x05"
 #endif
 
 

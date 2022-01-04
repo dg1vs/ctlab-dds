@@ -492,7 +492,7 @@ void CalculateSweepParameters(void)
 
 }
 
-void LIMIT_DOUBLE(float *param, float min, float max)
+void LIMIT_FLOAT(float *param, float min, float max)
 {
     if (*param > max)
         *param = max;
@@ -539,15 +539,15 @@ void CheckLimits(void)
     }
     */
 
-    LIMIT_DOUBLE(&Params.dFrequency, 0.015625, MAX_FREQUENCY);
-    LIMIT_DOUBLE(&Params.dLevel, 0.025f, 8191.0f);
+    LIMIT_FLOAT(&Params.dFrequency, 0.015625, MAX_FREQUENCY);
+    LIMIT_FLOAT(&Params.dLevel, 0.025f, 8191.0f);
     LIMIT_INT16(&Params.iOffset, -10000, 10000);
 
     // Make sure Offset can be divided by 5 mV
     Params.iOffset -= Params.iOffset % 5;
 
-    LIMIT_DOUBLE(&Params.dSweepStart, 0.015625, MAX_FREQUENCY);
-    LIMIT_DOUBLE(&Params.dSweepEnd, 0.015625, MAX_FREQUENCY);
+    LIMIT_FLOAT(&Params.dSweepStart, 0.015625, MAX_FREQUENCY);
+    LIMIT_FLOAT(&Params.dSweepEnd, 0.015625, MAX_FREQUENCY);
 
     // check sweep start against sweep end (only if changed)
     // and transfer values to other pair of settings
@@ -572,8 +572,8 @@ void CheckLimits(void)
         }
         else
         {
-            LIMIT_DOUBLE(&Params.dSweepCenter, 0.015625, MAX_FREQUENCY);
-            LIMIT_DOUBLE(&Params.dSweepSpanFactor, 1.0f,1000.0f);
+            LIMIT_FLOAT(&Params.dSweepCenter, 0.015625, MAX_FREQUENCY);
+            LIMIT_FLOAT(&Params.dSweepSpanFactor, 1.0f,1000.0f);
 
             // check sweep end and sweep start by modification of sweep center (only if changed)
             // and transfer values to other pair of settings
@@ -651,7 +651,7 @@ void CheckLimits(void)
     LIMIT_UINT8(&Params.ucSweepMode, 0, 1);
     LIMIT_UINT8(&Params.ucSweepSlope, 0, 2);
     LIMIT_UINT8(&Params.ucSweepMarker, 0, 2);
-    LIMIT_DOUBLE(&Params.dSweepMarkerHeight, 0.50f, 2.0f);
+    LIMIT_FLOAT(&Params.dSweepMarkerHeight, 0.50f, 2.0f);
     LIMIT_UINT8(&Params.ucSweepMarkerMode, 0, 1);
 
     LIMIT_UINT8(&Params.ucVolt_dB, 0, 1);
@@ -660,8 +660,8 @@ void CheckLimits(void)
     //  LIMIT_UINT8(&Params.ucSerBaudReg, x, x);
     //  LIMIT_DOUBLE(&Params.dInputGainFactor, x, x);
     //  LIMIT_UINT8(&Params.ucDisplayedMenu, x, x);
-    LIMIT_DOUBLE(&Params.dPeakLevel, 0.071f, 23168.f);
-    LIMIT_DOUBLE(&Params.dBULevel, -89.82, 20.49);
+    LIMIT_FLOAT(&Params.dPeakLevel, 0.071f, 23168.f);
+    LIMIT_FLOAT(&Params.dBULevel, -89.82, 20.49);
 
     LIMIT_INT16(&Params.iPWMDuty, 1, 999);
     LIMIT_INT16(&Params.iPWMimpulses, 0, 30000);
