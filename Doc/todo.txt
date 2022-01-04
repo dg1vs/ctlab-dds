@@ -1,3 +1,28 @@
+TODO Karsten (dg1vs)
+====================
+
+- git themen Nutzung der Lib einheitlich
+- Makefile
+- Anpassung 
+- Params
+-
+
+
+
+- Macros für "Char" in sprintf oder ähnlichen Funktionen
+- symbolische Werte für Sonderzeichen
+- "Zeilennummer durch eine #define-Konstante ersetzt, was als Nebeneffekt der Lesbarkeit gut tut. Das könnte man in Deinem NEUEN Code (ganz unten panel.c) auch noch machen, dann isses konsistent."
+	* Unterscheidung zwischen echten und virtuellen zeilennummern
+- Softkey für encoder
+- Vereinachung des Konstruktes LCDOverwrite_P(5, DISPLAY_LINE_1, 3, PSTR("Off"));
+	Speziell bei der großen Variante steckt hier Fehlerpotential
+- Entfernung des "Enter" beim Sweep
+	"Das ist bestimmt noch ein Überbleibsel aus vergangenen Tagen, als das Sweep-Menü mehrere Evolutionsstufen durchlief. Das "Enter" kann da weg."
+
+
+
+
+
 KNOWN BUGS
 ==========
 - TRMSC display shows -9999.0 instead of overload when range=1 V, level>1.021 V (already fixed by Thoralt)
@@ -48,16 +73,4 @@ NEEDS DISCUSSION
   looks not as smooth as it did with cms firmware (same as negative spikes in "known bugs", fixed)
 - in TRMSC display mode: change range with encoder
 
-
-TODO Karsten (dg1vs)
-====================
-- Macros für "Char" in sprintf oder ähnlichen Funktionen
-- symbolische Werte für Sonderzeichen
-- "Zeilennummer durch eine #define-Konstante ersetzt, was als Nebeneffekt der Lesbarkeit gut tut. Das könnte man in Deinem NEUEN Code (ganz unten panel.c) auch noch machen, dann isses konsistent."
-	* Unterscheidung zwischen echten und virtuellen zeilennummern
-- Softkey für encoder
-- Vereinachung des Konstruktes LCDOverwrite_P(5, DISPLAY_LINE_1, 3, PSTR("Off"));
-	Speziell bei der großen Variante steckt hier Fehlerpotential
-- Entfernung des "Enter" beim Sweep
-	"Das ist bestimmt noch ein Überbleibsel aus vergangenen Tagen, als das Sweep-Menü mehrere Evolutionsstufen durchlief. Das "Enter" kann da weg."
 
