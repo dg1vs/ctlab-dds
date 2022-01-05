@@ -710,6 +710,8 @@ int __attribute__((OS_main)) main(void)
         Panel_SplashScreen();
     }
 
+	
+
     SetLED(ACTIVITY_LED, 1);// Activity LED on
     wait_ms(3000);
 
@@ -764,6 +766,12 @@ int __attribute__((OS_main)) main(void)
     // init UART and set stream pointer (for printf)
     Uart_InitUBRR(pParams->ucSerBaudReg);
     stdout = &mystdout;
+
+
+
+	//parameter available
+	Encoder_Init(Params.ucEncoderPrescaler);
+	Encoder_SetAcceleration(16,8,4,1);
 
     printf_P(PSTR("#%d:254=%s\n"), g_ucSlaveCh, (char*)g_cVersStrLong );
 
