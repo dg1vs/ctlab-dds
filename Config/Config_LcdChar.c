@@ -1,8 +1,8 @@
 
 
-#include "Config.h"
+#include "Config_LcdChar.h"
 
-const PROGMEM uint8_t cursor[CURSOR_ARRAY_SIZE] =
+const PROGMEM uint8_t LCD_ExtraCharacter[CURSOR_ARRAY_SIZE] =
 {
 
 	#ifdef COMPILE_WITH_DISPLAY204

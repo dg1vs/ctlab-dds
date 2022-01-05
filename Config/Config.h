@@ -9,16 +9,6 @@
 #include <avr/pgmspace.h>
 
 
-//#define COMPILE_WITH_DISPLAY204 1 --< via Compiler Define
-
-#ifdef COMPILE_WITH_DISPLAY204              /* PM 20*4 */
-	#define CURSOR_ARRAY_SIZE 8*8
-#else                                       /* PM8 */
-	#define CURSOR_ARRAY_SIZE 6*8
-#endif
-
-extern const PROGMEM uint8_t cursor[CURSOR_ARRAY_SIZE];
-
 #define VERSSTRSHORT_STD "DDS D1.0"     // 8 chars max
 #define VERSSTRLONG_STD  "1.0d[DDS C by HB, TF, JW, PSC and KSC]"
 
