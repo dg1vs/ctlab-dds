@@ -83,6 +83,7 @@
 #include "timer.h"
 #include "dds.h"
 #include "dds-hw.h"
+#include "helper.h"
 
 STATUS Status;
 
@@ -297,15 +298,6 @@ void jobActivityTimer(void)
 //  return d;
 //}
 
-//----------------------------------------------------------------------------
-// Support Functions for CheckLimits
-//
-// This function checks all members of Sweep Params against their limits and
-// corrects them if necessary.
-//
-// -> --
-// <- --
-//----------------------------------------------------------------------------
 void CrossCalcSweep(uint8_t mode)
 {
     if (STARTEND2CENTER == mode)
@@ -492,30 +484,6 @@ void CalculateSweepParameters(void)
 
 }
 
-void LIMIT_FLOAT(float *param, float min, float max)
-{
-    if (*param > max)
-        *param = max;
-    else if (*param < min)
-        *param = min;
-}
-
-void LIMIT_UINT8(uint8_t *param, uint8_t min, uint8_t max)
-{
-    if (*param > max)
-        *param = max;
-    else if (*param < min)
-        *param = min;
-}
-
-void LIMIT_INT16(int16_t *param, int16_t min, int16_t max)
-{
-    if (*param > max)
-        *param = max;
-    else if (*param < min)
-        *param = min;
-}
-
 //----------------------------------------------------------------------------
 // CheckLimits
 //
@@ -527,18 +495,6 @@ void LIMIT_INT16(int16_t *param, int16_t min, int16_t max)
 //----------------------------------------------------------------------------
 void CheckLimits(void)
 {
-    /*
-    #define LIMIT_INT16(param, min, max) { \
-        if(param>max) param=max; \
-        else if(param<min) param=min; \
-    }
-
-    #define LIMIT_UINT8(param, min, max) { \
-        if((int8_t)param>max) param=max; \
-        else if((int8_t)param<min) param=min; \
-    }
-    */
-
     LIMIT_FLOAT(&Params.dFrequency, 0.015625, MAX_FREQUENCY);
     LIMIT_FLOAT(&Params.dLevel, 0.025f, 8191.0f);
     LIMIT_INT16(&Params.iOffset, -10000, 10000);
@@ -618,7 +574,6 @@ void CheckLimits(void)
                 }
         }
     }
-
 
     LIMIT_INT16(&Params.iSweepTime, 100, 30000);
 
@@ -710,9 +665,7 @@ int __attribute__((OS_main)) main(void)
         Panel_SplashScreen();
     }
 
-	
-
-    SetLED(ACTIVITY_LED, 1);// Activity LED on
+	SetLED(ACTIVITY_LED, 1);// Activity LED on
     wait_ms(3000);
 
 
@@ -771,7 +724,7 @@ int __attribute__((OS_main)) main(void)
 
 	//parameter available
 	Encoder_Init(Params.ucEncoderPrescaler);
-	Encoder_SetAcceleration(16,8,4,1);
+	// Encoder_SetAcceleration(16,8,4,1);
 
     printf_P(PSTR("#%d:254=%s\n"), g_ucSlaveCh, (char*)g_cVersStrLong );
 

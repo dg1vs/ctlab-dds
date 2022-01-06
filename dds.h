@@ -165,8 +165,7 @@
 #define EEPROM_PARAMS   (void*)2
 // time to wait between EEPROM writes (60000 means 30 seconds)
 #define MINIMUM_EEPROM_TIME 60000
-#define EEPROM_WRITE_CACHED() {\
-    ATOMIC_RW(xg_uEEPROM_Timer, MINIMUM_EEPROM_TIME); g_ucModifiedParams = 1;}
+#define EEPROM_WRITE_CACHED() {ATOMIC_RW(xg_uEEPROM_Timer, MINIMUM_EEPROM_TIME); g_ucModifiedParams = 1;}
 
 typedef union
 {

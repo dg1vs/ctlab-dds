@@ -2,16 +2,8 @@
 #define MAIN_H_
 
 #include <inttypes.h>
+#include "helper_macros.h"
 
-//----------------------------------------------------------------------------
-// some useful shortcuts
-//----------------------------------------------------------------------------
-#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#define LO(x)   ((x)&0xFF)
-#define HI(x)   (((x)>>8)&0xFF)
-#define nop()   asm volatile("nop"::)
-#define sleep() asm volatile("sleep"::)
 
 //----------------------------------------------------------------------------
 // prototypes

@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <avr/interrupt.h>
 #include "dds.h"
+#include "helper_macros.h"
 
 //----------------------------------------------------------------------------
 // external declaration of all timer variables
@@ -74,9 +75,6 @@ extern volatile uint8_t g_ucLastPulse;
 void InitTimer(void);
 void wait_ms(uint16_t);
 
-
-// atomic access to multi-byte variables which are modified during interrupts
-#define ATOMIC_RW(dst, src) {cli(); dst = src; sei();}
 
 
 //----------------------------------------------------------------------------
